@@ -66,6 +66,9 @@ Claude Code automatically.
 
 ## Install in claude.ai or the desktop app (first time, for anyone)
 
+The step-by-step version written for the person doing it is
+[../INSTALL.md](../INSTALL.md). In short:
+
 1. Download the newest version from this link, which always points at the
    latest release:
    https://github.com/Economycar/plasma-path/releases/latest/download/plasma-path.skill

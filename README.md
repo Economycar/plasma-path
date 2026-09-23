@@ -6,6 +6,7 @@ offset for kerf, and produce G-code for a **Langmuir CrossFire (original)
 running Mach3 with no Z axis**. The tool is a local web app called Plasma Path.
 
 Started 2026-09-21. See `docs/05-session-log.md` for what happened when.
+If you just want to use the Claude skill, read [INSTALL.md](INSTALL.md).
 
 ## Quick start
 
@@ -62,6 +63,7 @@ the Size and kerf panel. Bed assumed 24 x 24 in.
 who only has Claude Desktop: pure Python, no installs, conversational.
 See `skill/README.md` and `docs/06-skill.md`.
 
-To use it in claude.ai or the Claude desktop app: download
-https://github.com/Economycar/plasma-path/releases/latest/download/plasma-path.skill
-and upload it under Customize > Skills (with code execution turned on).
+**To use it in claude.ai or the Claude desktop app, follow
+[INSTALL.md](INSTALL.md)**: download the latest skill file from the link
+there and upload it under Customize > Skills. It also covers updating and
+day-to-day use.
