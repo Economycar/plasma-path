@@ -4,10 +4,10 @@
     {
       "id": 0,
       "name": "coloring-page-silhouette",
-      "prompt": "Here's a Snoopy coloring page I found online (skill/plasma-path/evals/files/snoopy.webp). I want to cut him out of 14 gauge mild steel on my Langmuir CrossFire with Mach3, about 12 inches tall, as a solid shape with the eyes and nose as holes. I can't answer questions right now, so use sensible defaults, tell me what you assumed, and give me the .nc file and a picture of what it will cut. Save everything into the outputs folder I named.",
+      "prompt": "Here's a fish coloring page I found online (skill/plasma-path/evals/files/fish.png). I want to cut it out of 14 gauge mild steel on my Langmuir CrossFire with Mach3, about 12 inches tall, as a solid shape with the eyes and nose as holes. I can't answer questions right now, so use sensible defaults, tell me what you assumed, and give me the .nc file and a picture of what it will cut. Save everything into the outputs folder I named.",
       "expected_output": "A Mach3 .nc file (XY only, M3/M5, G4 dwell, no Z) for a ~12 in tall silhouette with 4 holes, plus a toolpath preview image and a plain-language summary of assumptions (feed, pierce, kerf) and loading steps.",
       "files": [
-        "skill/plasma-path/evals/files/snoopy.webp"
+        "skill/plasma-path/evals/files/fish.png"
       ],
       "assertions": [
         "An .nc file exists in outputs",
@@ -42,10 +42,10 @@
     {
       "id": 2,
       "name": "noisy-scan-cleanup",
-      "prompt": "My buddy scanned this drawing for me and it came out crooked and grainy (skill/plasma-path/evals/files/snoopy_scan.png). Can you clean it up and make a 10 inch tall cutout for my plasma table (CrossFire, Mach3)? Solid shape is fine. I'd like to see the cleaned-up drawing before the cut file, but I can't reply right now, so show me both and tell me if anything looks off. Save to the outputs folder I named.",
+      "prompt": "My buddy scanned this drawing for me and it came out crooked and grainy (skill/plasma-path/evals/files/fish_scan.png). Can you clean it up and make a 10 inch tall cutout for my plasma table (CrossFire, Mach3)? Solid shape is fine. I'd like to see the cleaned-up drawing before the cut file, but I can't reply right now, so show me both and tell me if anything looks off. Save to the outputs folder I named.",
       "expected_output": "A cleaned bitmap with the noise, border and watermark removed (only the drawing's marks kept), a silhouette design, an .nc file, and previews; the response should flag what was removed and any uncertainty.",
       "files": [
-        "skill/plasma-path/evals/files/snoopy_scan.png"
+        "skill/plasma-path/evals/files/fish_scan.png"
       ],
       "assertions": [
         "A cleaned black-and-white image exists in outputs in which the scan noise, the page border and the bottom watermark are gone and the drawing's lines are intact",

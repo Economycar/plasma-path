@@ -99,3 +99,11 @@ agreement and builds `dist/plasma-path-<ver>.skill`, and git with tags
 `skill-v<ver>`. First tag: skill-v1.1.0 (1.0.0 was the untagged first
 package earlier the same day). `skill/README.md` documents the update
 procedure on both sides, including removing the old skill before uploading.
+
+**Published.** The repository went public on GitHub as `plasma-path`. The
+Snoopy coloring page and everything derived from it (eval images, sample
+programs) were removed from the history first and replaced by
+`images/fish.png`, an original test drawing with the same features (thick
+strokes, enclosed eye, inner lines, a frame, a watermark). Sample programs
+were regenerated from it with the skill pipeline. Releases carry the
+`.skill` files.

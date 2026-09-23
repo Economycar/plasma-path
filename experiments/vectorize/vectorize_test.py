@@ -23,7 +23,7 @@ import cv2
 import numpy as np
 from svgpathtools import svg2paths
 
-src = sys.argv[1] if len(sys.argv) > 1 else "images/snoopy1.webp"
+src = sys.argv[1] if len(sys.argv) > 1 else "images/fish.png"
 out = sys.argv[2] if len(sys.argv) > 2 else "experiments/vectorize/results"
 os.makedirs(out, exist_ok=True)
 P = lambda n: os.path.join(out, n)

@@ -78,13 +78,13 @@ conversation uses the new version.
 
 ```bash
 python3 skill/plasma-path/scripts/pp.py version
-python3 skill/plasma-path/scripts/pp.py clean images/snoopy1.webp --job /tmp/job --bottom 0.05
+python3 skill/plasma-path/scripts/pp.py clean images/fish.png --job /tmp/job --bottom 0.05
 python3 skill/plasma-path/scripts/pp.py design --job /tmp/job --mode silhouette --height 12
-python3 skill/plasma-path/scripts/pp.py gcode  --job /tmp/job --name snoopy
-python3 scripts/compare_nc.py /tmp/job/snoopy.nc samples/gcode/silhouette.nc /tmp/overlay.png
+python3 skill/plasma-path/scripts/pp.py gcode  --job /tmp/job --name fish
+python3 scripts/compare_nc.py /tmp/job/fish.nc samples/gcode/silhouette.nc /tmp/overlay.png
 ```
 
-The last line overlays the new program on the one cut on 2026-09-21 and
+The last line overlays the new program on the reference program in samples/ and
 prints the deviation. Run it after any change to the geometry or the post;
 it should stay within a few hundredths of an inch apart from lead-ins.
 

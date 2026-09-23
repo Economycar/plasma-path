@@ -17,7 +17,7 @@ if "--write" in argv:
     k = argv.index("--write")
     write = argv[k + 1]
     del argv[k:k + 2]
-src = argv[0] if argv else "images/snoopy1.webp"
+src = argv[0] if argv else "images/fish.png"
 
 ok = True
 for mode in ("silhouette", "lineart", "stencil"):
