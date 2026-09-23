@@ -61,3 +61,7 @@ the Size and kerf panel. Bed assumed 24 x 24 in.
 `skill/plasma-path/` packages the pipeline as a Claude skill for someone
 who only has Claude Desktop: pure Python, no installs, conversational.
 See `skill/README.md` and `docs/06-skill.md`.
+
+To use it in claude.ai or the Claude desktop app: download
+https://github.com/Economycar/plasma-path/releases/latest/download/plasma-path.skill
+and upload it under Customize > Skills (with code execution turned on).

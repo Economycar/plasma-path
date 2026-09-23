@@ -66,10 +66,13 @@ Claude Code automatically.
 
 ## Install in claude.ai or the desktop app (first time, for anyone)
 
-1. Download the newest `plasma-path-<ver>.skill` from
-   https://github.com/Economycar/plasma-path/releases (or take it from
-   `dist/`). It is a zip with a different extension; the upload dialog
-   accepts it as is.
+1. Download the newest version from this link, which always points at the
+   latest release:
+   https://github.com/Economycar/plasma-path/releases/latest/download/plasma-path.skill
+   (each release also carries the numbered file, `plasma-path-<ver>.skill`).
+   It is a zip with a different extension; the upload dialog accepts it as
+   is. There is no way to install a skill into claude.ai from a link or a
+   repository; the file has to be uploaded.
 2. In claude.ai or the Claude desktop app, with code execution and file
    creation on (Settings > Capabilities): Customize > Skills > + > Create
    skill > Upload a skill.
