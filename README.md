@@ -1,7 +1,7 @@
 # Plasma Path: raster image to plasma-cut G-code
 
-An experiment that became a tool. Start with a raster image (the test case is a
-Snoopy coloring page), vectorize it, decide what is metal and what is removed,
+An experiment that became a tool. Start with a raster image (the test case is
+`images/fish.png`, an original line drawing), vectorize it, decide what is metal and what is removed,
 offset for kerf, and produce G-code for a **Langmuir CrossFire (original)
 running Mach3 with no Z axis**. The tool is a local web app called Plasma Path.
 
@@ -35,7 +35,7 @@ Headless checks, no browser needed:
       screenshots/                  UI in each cut mode
     experiments/vectorize/   the first experiment as a standalone script + its results
     scripts/smoke_test.py    run the pipeline headless in all modes
-    samples/gcode/           reference .nc output for each mode, 12 in tall Snoopy
+    samples/gcode/           reference .nc output for each mode, 10 in tall fish, made by the skill
     images/                  source images
     out/                     files the app saves (yours to keep or clear)
     uploads/                 images added through the browser (created on demand)

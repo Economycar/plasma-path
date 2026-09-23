@@ -72,7 +72,7 @@ dimension callouts. Also in `04-backlog.md`.
   if you accept the risk, or scale up.
 - *Part extends beyond the bed*: reduce height or margin.
 
-## Useful defaults for the Snoopy test at 12 in
+## Useful defaults for the first 12 in test (a coloring-page style drawing)
 
 | Setting | Value |
 |---|---|
