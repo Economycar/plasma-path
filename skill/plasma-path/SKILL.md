@@ -2,7 +2,7 @@
 name: plasma-path
 description: Turn a picture (coloring page, logo, clip art, sketch, scan, or a photo of a drawing) into a ready-to-run Mach3 G-code program (.nc) for a Langmuir CrossFire plasma table, through a short conversation with previews at every step. Use this whenever the user shares an image and mentions cutting it, plasma, CNC, the CrossFire, Mach3, G-code, .nc or .tap files, a metal sign, a stencil, a silhouette, or asks "can you cut this" or "make this cuttable". Also use it to change a cut already made with it (size, which parts get cut, bridges, material) or when they ask what cut settings to use.
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
 ---
 
 # Plasma Path

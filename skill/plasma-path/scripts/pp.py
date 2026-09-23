@@ -23,7 +23,7 @@ torch, G4 for the pierce dwell, G0 rapids, G1 cuts.
 """
 from __future__ import annotations
 
-__version__ = "1.2.0"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
+__version__ = "1.2.1"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
 
 import argparse
 import json
@@ -760,9 +760,20 @@ def cmd_design(a):
     if thin_area > (P["min_material"] ** 2) * 4:
         warnings.append(f"Some material is thinner than {P['min_material']:g} {u} (about {thin_area:.2f} sq {u} in total, shown red). It may burn away; make the part bigger or fill/drop it.")
     off = dilate(kept, kerf_px / 2)
-    lost_holes = len(regions(kept)[2]) - len(regions(off)[2])
+    holes_before = holes_of(kept)
+    holes_after = holes_of(off)
+    lost_holes = label(holes_before)[1] - label(holes_after & holes_before)[1]
     if lost_holes > 0:
         warnings.append(f"{lost_holes} cutout(s) are narrower than the kerf and will not exist in metal (they are simply skipped).")
+    new_windows = holes_after & ~ndi.binary_dilation(holes_before, structure=disk(kerf_px))
+    lab_w, n_w = label(new_windows)
+    n_windows = 0
+    if n_w:
+        w_areas = ndi.sum(new_windows, lab_w, index=np.arange(1, n_w + 1))
+        n_windows = int((w_areas >= kerf_px * kerf_px).sum())   # ignore slivers the torch cannot cut anyway
+    if n_windows > 0:
+        warnings.append(f"{n_windows} narrow gap(s) close up under the kerf, leaving enclosed pocket(s) behind them that will be cut as small windows. "
+                        f"If that is not wanted, widen the gap (edit --erase or --thin) or fill it (edit --paint-poly).")
     if n_k > 1:
         warnings.append(f"{n_k - 1} piece(s) are not connected to the main part and would fall out of the sheet. Pick bridge letters, drop them, or accept loose pieces."
                         + (" With this many, --auto-bridges 1 or 2 is usually the quickest; for raised text, re-make with --bar." if n_k > 5 else ""))
@@ -1005,6 +1016,10 @@ def cmd_gcode(a):
     trace_s = time.time() - t0
     rings_px = [flatten_curve(c, 1.0) for c in path.curves]
     rings_px = [r for r in rings_px if len(r) >= 3]
+    # loops smaller than a couple of kerf widths are trace artefacts at pinched gaps; the torch cannot cut them
+    min_area_px = (2 * kerf_px) ** 2
+    tiny = [r for r in rings_px if abs(signed_area(r)) < min_area_px]
+    rings_px = [r for r in rings_px if abs(signed_area(r)) >= min_area_px]
 
     # ---- machine coordinates: y up, part corner at the origin margin
     def to_m(p):
@@ -1111,6 +1126,8 @@ def cmd_gcode(a):
     maxx = max(p[0] for c in cuts for p in c["pts"])
     maxy = max(p[1] for c in cuts for p in c["pts"])
     warnings = list(D["result"].get("warnings", []))
+    if tiny:
+        warnings.append(f"skipped {len(tiny)} loop(s) smaller than two kerf widths (pinched gaps the torch cannot enter).")
     no_lead = [c["id"] for c, r in zip(cuts, ordered) if r["lead_len"] == 0]
     if no_lead:
         warnings.append(f"{len(no_lead)} cut(s) start on the line with no lead-in (no clear scrap nearby): {', '.join(no_lead)}")
@@ -1430,9 +1447,9 @@ def cmd_edit(a):
         # opening then closing inside a rectangle, to knock off nubs and fill nicks
         x0, y0, x1, y1 = [int(v) for v in _rect_px(spec.split(":")[0], W, H)]
         r = float(spec.split(":")[1]) if ":" in spec else 3
-        sub = ink[y0:y1, x0:x1]
-        sub = ndi.binary_closing(ndi.binary_opening(sub, structure=disk(r)), structure=disk(r))
-        ink[y0:y1, x0:x1] = sub
+        # run on the whole image (so the rectangle's edges see their neighbours) and keep only the inside
+        full = ndi.binary_closing(ndi.binary_opening(ink, structure=disk(r)), structure=disk(r))
+        ink[y0:y1, x0:x1] = full[y0:y1, x0:x1]
         applied.append(f"smooth region {spec}")
     if a.smooth:
         ink = ndi.binary_closing(ndi.binary_opening(ink, structure=disk(a.smooth)), structure=disk(a.smooth))

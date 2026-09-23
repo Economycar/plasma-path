@@ -72,6 +72,22 @@
         "The response states the assumed feed, pierce delay and kerf",
         "A toolpath preview image exists in outputs"
       ]
+    },
+    {
+      "id": 4,
+      "name": "flower-stem",
+      "prompt": "Turn 1: Here's a photo of a flower (evals/files/flower_photo.png). Make it an 8 inch tall solid silhouette for my CrossFire (Mach3), 14 gauge steel. I want just the flower head, no stem. Turn 2: There's still a bump on the bottom-right petal where the stem was. Get rid of it completely, the petal should be a clean oval like the others.",
+      "expected_output": "A silhouette with the stem removed and the damaged petal restored to a clean oval by Claude's own image editing (edit or adopt), an .nc file, previews, and a response that does not claim the picture cannot be changed.",
+      "files": [
+        "skill/plasma-path/evals/files/flower_photo.png"
+      ],
+      "assertions": [
+        "The final design preview shows the bottom-right petal as a clean oval with no stem bump",
+        "The response never says the picture or a part of it cannot be changed",
+        "An .nc file exists with G20 units, no Z moves, M3/M5 and G4",
+        "The part is about 8 in tall",
+        "A toolpath preview exists and the response explains the choices made in plain words"
+      ]
     }
   ]
 }

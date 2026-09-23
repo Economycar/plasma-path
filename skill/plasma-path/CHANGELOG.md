@@ -10,6 +10,18 @@ The version is in three places that must agree: `SKILL.md` frontmatter
 (`metadata.version`), `scripts/pp.py` (`__version__`), and this file. The
 second comment line of every `.nc` file records the version that made it.
 
+## 1.2.1 - 2026-09-23
+
+Fixed
+- `edit --smooth-region` no longer erases a frame around its rectangle
+  (the morphology now runs on the whole image and only the inside of the
+  rectangle is written back).
+- `gcode` skips loops smaller than two kerf widths, which the tracer
+  produced at pinched gaps, and says so.
+- `design` warns when a narrow gap closes under the kerf and leaves an
+  enclosed pocket that would be cut as a small window, with the edit to
+  make if that is unwanted.
+
 ## 1.2.0 - 2026-09-23
 
 Added
