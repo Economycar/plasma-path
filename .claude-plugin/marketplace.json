@@ -1,0 +1,17 @@
+{
+  "name": "plasma-path",
+  "owner": {
+    "name": "Economycar"
+  },
+  "metadata": {
+    "description": "Plasma Path: turn a picture into Mach3 G-code for a Langmuir CrossFire plasma table"
+  },
+  "plugins": [
+    {
+      "name": "plasma-path",
+      "description": "Picture or description to a ready-to-run Mach3 .nc program for a Langmuir CrossFire, through a conversation with previews",
+      "version": "1.2.2",
+      "source": "./skill"
+    }
+  ]
+}

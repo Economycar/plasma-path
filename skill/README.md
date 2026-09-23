@@ -39,7 +39,27 @@ changes in a way that makes old habits wrong.
 Git tags mirror the packages: `skill-v1.1.0` is the commit that produced
 `dist/plasma-path-1.1.0.skill`.
 
-## Install (first time, for anyone)
+## Install in Claude Code (from GitHub)
+
+The repository is a Claude Code plugin marketplace. Inside Claude Code:
+
+```
+/plugin marketplace add Economycar/plasma-path
+/plugin install plasma-path@plasma-path
+```
+
+or from a terminal, `claude plugin install plasma-path@plasma-path` after
+adding the marketplace. Later updates: `claude plugin update plasma-path`.
+The first run on that computer needs numpy, scipy and Pillow; the skill
+checks and tells Claude to install them if missing. Job folders land in
+`./plasma-jobs/` inside whatever folder Claude Code was started in.
+
+A skill installed this way lives only in Claude Code. It does not appear in
+the claude.ai web or desktop chat; for that, upload the `.skill` file as
+below. The reverse does work: a skill uploaded to claude.ai syncs into
+Claude Code automatically.
+
+## Install in claude.ai or the desktop app (first time, for anyone)
 
 1. Download the newest `plasma-path-<ver>.skill` from
    https://github.com/Economycar/plasma-path/releases (or take it from

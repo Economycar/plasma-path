@@ -11,6 +11,19 @@ grep -q "^## $VER " plasma-path/CHANGELOG.md || { echo "CHANGELOG.md has no entr
 SKILL_DIR="$(pwd)/plasma-path"
 SC=$(ls -d ~/.claude/skills/synced/*/skill-creator 2>/dev/null | head -1)
 if [ -n "$SC" ]; then (cd "$SC" && python3 -m scripts.quick_validate "$SKILL_DIR" | tail -1); fi
+# keep the plugin manifests on the same version
+python3 - "$VER" <<'PY'
+import json, sys
+v = sys.argv[1]
+for path, key in (("../.claude-plugin/marketplace.json", "plugins"), (".claude-plugin/plugin.json", None)):
+    d = json.load(open(path))
+    if key:
+        for p in d[key]:
+            p["version"] = v
+    else:
+        d["version"] = v
+    json.dump(d, open(path, "w"), indent=2); open(path, "a").write("\n")
+PY
 OUT=dist/plasma-path-$VER.skill
 rm -f "$OUT"
 (cd . && zip -qr "$OUT" plasma-path -x '*__pycache__*' '*.pyc' 'plasma-path/evals/*')

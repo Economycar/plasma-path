@@ -10,6 +10,15 @@ The version is in three places that must agree: `SKILL.md` frontmatter
 (`metadata.version`), `scripts/pp.py` (`__version__`), and this file. The
 second comment line of every `.nc` file records the version that made it.
 
+## 1.2.2 - 2026-09-23
+
+Changed
+- The repository is now a Claude Code plugin marketplace, so the skill can
+  be installed in Claude Code straight from GitHub and updated with one
+  command. No change to what the skill does.
+- Setup note for running on a person's own computer: install numpy, scipy
+  and Pillow once if the import check fails.
+
 ## 1.2.1 - 2026-09-23
 
 Fixed

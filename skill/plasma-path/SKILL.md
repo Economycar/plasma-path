@@ -2,7 +2,7 @@
 name: plasma-path
 description: Turn a picture (coloring page, logo, clip art, sketch, scan, or a photo of a drawing) into a ready-to-run Mach3 G-code program (.nc) for a Langmuir CrossFire plasma table, through a short conversation with previews at every step. Use this whenever the user shares an image and mentions cutting it, plasma, CNC, the CrossFire, Mach3, G-code, .nc or .tap files, a metal sign, a stencil, a silhouette, or asks "can you cut this" or "make this cuttable". Also use it to change a cut already made with it (size, which parts get cut, bridges, material) or when they ask what cut settings to use.
 metadata:
-  version: "1.2.1"
+  version: "1.2.2"
 ---
 
 # Plasma Path
@@ -31,10 +31,13 @@ Two different attitudes apply to the two halves of the job:
 ## Setup
 
 - The script is `scripts/pp.py` next to this file. It needs only numpy, scipy
-  and Pillow, which are already installed; the tracer and fonts are vendored.
+  and Pillow; the tracer and fonts are vendored. In claude.ai those three are
+  preinstalled. On a person's own computer (Claude Code), check once with
+  `python3 -c "import numpy, scipy, PIL"` and if that fails run
+  `python3 -m pip install --user numpy scipy pillow` before anything else.
   For your own image work those three are usually enough; if a job really
   wants OpenCV or scikit-image, try `pip install` once and fall back to
-  numpy/scipy if the sandbox has no network.
+  numpy/scipy if there is no network.
 - Make one job folder per picture, inside the outputs directory when the
   environment has one (for example `/mnt/user-data/outputs/<short-name>/`),
   otherwise `./plasma-jobs/<short-name>/`. Every stage writes its previews and
