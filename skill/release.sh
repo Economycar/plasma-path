@@ -15,6 +15,15 @@ OUT=dist/plasma-path-$VER.skill
 rm -f "$OUT"
 (cd . && zip -qr "$OUT" plasma-path -x '*__pycache__*' '*.pyc' 'plasma-path/evals/*')
 echo "packaged $OUT ($(du -h "$OUT" | cut -f1))"
+if [ "${1:-}" = "--publish" ]; then
+  NOTES=$(awk -v v="$VER" '$0 ~ "^## "v" " {f=1; next} /^## / {f=0} f' plasma-path/CHANGELOG.md)
+  git -C .. rev-parse "skill-v$VER" >/dev/null 2>&1 || { echo "tag skill-v$VER missing: commit, tag and push first"; exit 1; }
+  gh release create "skill-v$VER" "$OUT" --title "plasma-path skill $VER" \
+    --notes "Upload \`plasma-path-$VER.skill\` in claude.ai under Customize > Skills (remove any older plasma-path entry first).
+
+$NOTES"
+  exit 0
+fi
 if git -C .. rev-parse --git-dir >/dev/null 2>&1; then
   if git -C .. rev-parse "skill-v$VER" >/dev/null 2>&1; then
     echo "tag skill-v$VER already exists; commit your changes and bump the version for a new release"

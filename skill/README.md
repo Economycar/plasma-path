@@ -41,8 +41,10 @@ Git tags mirror the packages: `skill-v1.1.0` is the commit that produced
 
 ## Install (first time, for anyone)
 
-1. Send `dist/plasma-path-<ver>.skill`. It is a zip with a different
-   extension; the upload dialog accepts it as is.
+1. Download the newest `plasma-path-<ver>.skill` from
+   https://github.com/Economycar/plasma-path/releases (or take it from
+   `dist/`). It is a zip with a different extension; the upload dialog
+   accepts it as is.
 2. In claude.ai or the Claude desktop app, with code execution and file
    creation on (Settings > Capabilities): Customize > Skills > + > Create
    skill > Upload a skill.
@@ -61,10 +63,10 @@ On this side:
 1. Make the change under `plasma-path/`.
 2. Bump the version in `scripts/pp.py`, `SKILL.md` and add a `CHANGELOG.md`
    entry dated today.
-3. `skill/release.sh`, then commit and tag as it prints:
-   `git add -A && git commit -m "skill 1.2.0" && git tag skill-v1.2.0`.
-4. Send `dist/plasma-path-<ver>.skill` with the changelog entry as the
-   message.
+3. `skill/release.sh`, then commit and tag as it prints, and push:
+   `git add -A && git commit -m "skill 1.2.0" && git tag skill-v1.2.0 && git push --follow-tags`.
+4. `skill/release.sh --publish` creates the GitHub release with the file
+   attached and the changelog entry as its notes. Send the release link.
 
 On the receiving side: open Customize > Skills, remove the old plasma-path
 entry, then upload the new file. Uploading without removing may leave two
