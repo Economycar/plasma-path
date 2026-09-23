@@ -28,6 +28,13 @@ Claude's side; you get files back in the chat.
    into its instructions, editing the line about your usual material and
    sheet size. Then every new chat in that project already knows your table.
 
+**If the menus look different.** Claude's app is changing during
+September 2026 (chat and Cowork are being merged into one Claude, rolling
+out over a few weeks). The skill and the steps are the same; only the menu
+names may move. If you can't find *Customize > Skills*, open Settings and
+look for *Skills* or *Capabilities*, or ask Claude itself "where do I upload
+a custom skill?".
+
 ## Using it
 
 Start a new chat (in the project if you made one), attach a picture, and
@@ -55,7 +62,8 @@ the file in Mach3 yourself, so it's safe to experiment.
 
 ## Getting a picture when you don't have one
 
-Claude can't draw pictures itself (no Claude app can), but it can turn any
+Claude can't draw pictures itself (no Claude app can, as of September
+2026; Anthropic has no image-generation model), but it can turn any
 picture into a cut file, and it can make simple shapes and text on its own
 ("a 10 inch circle with WELCOME cut out"). For anything else, three
 options, easiest first:
