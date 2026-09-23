@@ -1,0 +1,31 @@
+components: 24
+  1: bbox=(53,53,1081,1436) area=14142 FRAME
+  2: bbox=(120,182,939,1188) area=141040 
+  3: bbox=(527,254,76,47) area=1404 
+  4: bbox=(671,400,39,64) area=2032 
+  5: bbox=(581,404,43,73) area=2417 
+  6: bbox=(799,500,112,73) area=6608 
+  7: bbox=(887,1477,3,4) area=9 WATERMARK
+  8: bbox=(784,1479,19,20) area=124 WATERMARK
+  9: bbox=(826,1478,3,21) area=63 WATERMARK
+  10: bbox=(892,1479,9,20) area=64 WATERMARK
+  11: bbox=(904,1478,15,21) area=129 WATERMARK
+  12: bbox=(922,1479,17,20) area=135 WATERMARK
+  13: bbox=(807,1483,16,16) area=117 WATERMARK
+  14: bbox=(833,1483,16,16) area=113 WATERMARK
+  15: bbox=(852,1483,8,16) area=62 WATERMARK
+  16: bbox=(862,1483,22,16) area=150 WATERMARK
+  17: bbox=(887,1483,3,16) area=47 WATERMARK
+  18: bbox=(943,1483,14,16) area=110 WATERMARK
+  19: bbox=(961,1483,15,16) area=114 WATERMARK
+  20: bbox=(979,1483,16,16) area=124 WATERMARK
+  21: bbox=(1003,1483,15,16) area=93 WATERMARK
+  22: bbox=(1021,1483,16,16) area=115 WATERMARK
+  23: bbox=(1040,1483,26,16) area=168 WATERMARK
+  24: bbox=(997,1496,4,3) area=10 WATERMARK
+ink px original=153501 traced=153238 IoU=0.9860
+px only in original=1211 only in trace=948
+trace boundary vs original: mean=0.14px 95%=1.00px max=1.00px
+paths=5 closed subpaths=9 bezier segments=363
+stroke half-width median=6.4px -> typical stroke ~24px
+enclosed white regions: 4

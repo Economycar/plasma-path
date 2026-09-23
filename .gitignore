@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+uploads/
+*.pyc
+out/
+skill/plasma-path-workspace/
+skill/plasma-path/scripts/vendor/**/__pycache__/

@@ -1,0 +1,77 @@
+{
+  "skill_name": "plasma-path",
+  "evals": [
+    {
+      "id": 0,
+      "name": "coloring-page-silhouette",
+      "prompt": "Here's a Snoopy coloring page I found online (skill/plasma-path/evals/files/snoopy.webp). I want to cut him out of 14 gauge mild steel on my Langmuir CrossFire with Mach3, about 12 inches tall, as a solid shape with the eyes and nose as holes. I can't answer questions right now, so use sensible defaults, tell me what you assumed, and give me the .nc file and a picture of what it will cut. Save everything into the outputs folder I named.",
+      "expected_output": "A Mach3 .nc file (XY only, M3/M5, G4 dwell, no Z) for a ~12 in tall silhouette with 4 holes, plus a toolpath preview image and a plain-language summary of assumptions (feed, pierce, kerf) and loading steps.",
+      "files": [
+        "skill/plasma-path/evals/files/snoopy.webp"
+      ],
+      "assertions": [
+        "An .nc file exists in outputs",
+        "The .nc file contains no Z-axis moves (no Z words on G0/G1 lines) and no THC commands",
+        "The .nc file uses M3/M5 for the torch and G4 for the pierce dwell, with G20 (inch) units",
+        "The program has 4 or 5 pierces (eyes and nose, optionally the eyebrow gap, then the outline), holes are cut before the outline, and the response says what it did with the eyebrow gap",
+        "The cut extent is about 12 in tall (11.5 to 12.7 in of Y travel above the origin margin)",
+        "A preview image of the toolpath exists in outputs",
+        "The response states the assumed feed, pierce delay and kerf values",
+        "The response gives Mach3 loading or zeroing steps and recommends a dry run"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "logo-stencil-mm",
+      "prompt": "This is my shop logo, white on dark (skill/plasma-path/evals/files/logo_light_on_dark.png). Make me a spray-paint stencil for it, 300 mm wide, out of 1.5 mm steel, for the CrossFire plasma table running Mach3. The letters have to stay attached to the plate obviously. I'm away from the computer so just make good choices and explain them, and give me the G-code file plus a preview. Put the files in the outputs folder I named.",
+      "expected_output": "A stencil design in mm with bridges on every enclosed letter counter (B, O), an .nc file in G21 units, a design/toolpath preview, and an explanation of where the bridges are.",
+      "files": [
+        "skill/plasma-path/evals/files/logo_light_on_dark.png"
+      ],
+      "assertions": [
+        "An .nc file exists in outputs and uses G21 (millimetre) units",
+        "The .nc file contains no Z-axis moves and uses M3/M5 with a G4 dwell",
+        "The stencil is a plate: the last cut is a rectangular outline around the artwork and cutouts are cut first",
+        "Every enclosed letter counter (the insides of both B's and the O and the ring) is bridged, i.e. the design reports one connected piece and no loose pieces",
+        "The program's X extent is about 300 mm plus plate margins (310 to 345 mm)",
+        "A design or toolpath preview image exists in outputs showing the bridges",
+        "The response explains where bridges were placed and why",
+        "The response states the assumed feed, pierce delay and kerf for 1.5 mm steel"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "noisy-scan-cleanup",
+      "prompt": "My buddy scanned this drawing for me and it came out crooked and grainy (skill/plasma-path/evals/files/snoopy_scan.png). Can you clean it up and make a 10 inch tall cutout for my plasma table (CrossFire, Mach3)? Solid shape is fine. I'd like to see the cleaned-up drawing before the cut file, but I can't reply right now, so show me both and tell me if anything looks off. Save to the outputs folder I named.",
+      "expected_output": "A cleaned bitmap with the noise, border and watermark removed (only the drawing's marks kept), a silhouette design, an .nc file, and previews; the response should flag what was removed and any uncertainty.",
+      "files": [
+        "skill/plasma-path/evals/files/snoopy_scan.png"
+      ],
+      "assertions": [
+        "A cleaned black-and-white image exists in outputs in which the scan noise, the page border and the bottom watermark are gone and the drawing's lines are intact",
+        "An .nc file exists in outputs with G20 units, no Z moves, M3/M5 and G4",
+        "The program has exactly 5 pierces (4 holes plus the outline) or the response explains why it differs",
+        "The cut extent is about 10 in tall (9.5 to 10.7 in of Y travel above the origin margin)",
+        "A toolpath preview image exists in outputs",
+        "The response shows or points to the cleaned drawing and says what was removed",
+        "The response flags any uncertainty (e.g. slight tilt kept, watermark, thin features) rather than claiming perfection"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "circle-sign-text",
+      "prompt": "I want a 10 inch circle with Arial text saying 'XYZ' in the center, with a hole at the top so I can hang it. 14 gauge steel on my CrossFire with Mach3. I can't answer questions right now, so make good choices, tell me what you assumed, and give me the .nc file and a picture. Save everything into the outputs folder I named.",
+      "expected_output": "A 10 in disc made with the make command, XYZ cut through in an Arial-compatible font, a hanging hole near the top edge, an .nc file with G20 units and no Z, previews, and a response that names the font substitution and the assumed cut settings.",
+      "files": [],
+      "assertions": [
+        "An .nc file exists in outputs with G20 units, no Z moves, M3/M5 and G4",
+        "The design is a circle about 10 in across (X and Y extents 10.0 to 10.6 in above the origin margin)",
+        "The letters X, Y and Z are cut out of the disc (cutouts cut before the outline; the preview shows the letters as white in a gray disc)",
+        "A round hanging hole exists near the top of the disc",
+        "The response says the font is an Arial-compatible substitute (Liberation Sans) rather than claiming it is Arial",
+        "The response states the assumed feed, pierce delay and kerf",
+        "A toolpath preview image exists in outputs"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plasma Path</title>
+<style>
+  :root {
+    --bg: #14161a; --panel: #1c1f25; --panel2: #23272f; --line: #2e333c;
+    --fg: #e6e8ec; --muted: #9aa3b2; --accent: #f0a53a; --outer: #ff5d5d; --hole: #5aa9ff;
+    --ok: #59c98b; --warn: #f0a53a; --err: #ff5d5d; --mono: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; height: 100vh; display: grid; grid-template-rows: 48px 1fr; }
+  header { display: flex; align-items: center; gap: 16px; padding: 0 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; letter-spacing: .02em; }
+  header .status { color: var(--muted); font-family: var(--mono); font-size: 12px; margin-left: auto; }
+  header .status.busy { color: var(--accent); }
+  main { display: grid; grid-template-columns: 330px 1fr 340px; min-height: 0; }
+  aside { overflow: auto; background: var(--panel); border-right: 1px solid var(--line); }
+  aside.right { border-right: 0; border-left: 1px solid var(--line); display: flex; flex-direction: column; }
+  details { border-bottom: 1px solid var(--line); }
+  details > summary { cursor: pointer; padding: 10px 14px; font-weight: 600; list-style: none; display: flex; align-items: center; gap: 8px; user-select: none; }
+  details > summary::before { content: "▸"; color: var(--muted); font-size: 11px; }
+  details[open] > summary::before { content: "▾"; }
+  details > summary .n { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--panel2); color: var(--muted); font-size: 11px; }
+  .body { padding: 4px 14px 14px; display: grid; gap: 8px; }
+  .row { display: grid; grid-template-columns: 1fr 96px; align-items: center; gap: 8px; }
+  .row label { color: var(--muted); }
+  .row.full { grid-template-columns: 1fr; }
+  input[type=number], input[type=text], select { width: 100%; background: var(--panel2); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 5px 7px; font: inherit; font-family: var(--mono); font-size: 12px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=checkbox] { accent-color: var(--accent); }
+  .check { display: flex; align-items: center; gap: 8px; color: var(--fg); }
+  .help { color: var(--muted); font-size: 12px; }
+  .modes { display: grid; gap: 6px; }
+  .modes label { display: grid; grid-template-columns: 18px 1fr; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; background: var(--panel2); }
+  .modes label:has(input:checked) { border-color: var(--accent); }
+  .modes b { display: block; }
+  .modes span { color: var(--muted); font-size: 12px; }
+  button { background: var(--panel2); color: var(--fg); border: 1px solid var(--line); border-radius: 5px; padding: 6px 10px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--muted); }
+  button.primary { background: var(--accent); color: #1a1200; border-color: var(--accent); font-weight: 600; }
+  button.active { border-color: var(--accent); color: var(--accent); }
+  .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .stage { display: grid; grid-template-rows: auto 1fr auto; min-height: 0; }
+  .toolbar { display: flex; gap: 6px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .toolbar .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; color: var(--muted); user-select: none; }
+  .toolbar .chip.on { color: var(--fg); border-color: var(--muted); }
+  .toolbar .chip i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .toolbar .sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+  #view { width: 100%; height: 100%; display: block; background: #0f1114; cursor: grab; }
+  #view.bridge { cursor: crosshair; }
+  .stats { display: flex; gap: 18px; padding: 8px 14px; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .stats b { color: var(--fg); font-weight: 500; }
+  .paths { overflow: auto; flex: 1; }
+  .paths table { width: 100%; border-collapse: collapse; }
+  .paths th, .paths td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
+  .paths th { color: var(--muted); font-weight: 500; position: sticky; top: 0; background: var(--panel); }
+  .paths tr:hover td { background: var(--panel2); }
+  .tag { font-family: var(--mono); font-size: 11px; padding: 1px 6px; border-radius: 4px; }
+  .tag.outer { background: #3a1f1f; color: var(--outer); }
+  .tag.hole { background: #1d2a3d; color: var(--hole); }
+  .warnings { padding: 8px 12px; display: grid; gap: 6px; }
+  .warnings div { padding: 6px 9px; border-radius: 5px; background: #33260f; color: var(--warn); border-left: 3px solid var(--warn); font-size: 12px; }
+  .warnings div.ok { background: #14301f; color: var(--ok); border-color: var(--ok); }
+  .warnings div.err { background: #3a1616; color: var(--err); border-color: var(--err); }
+  .gcode { display: grid; grid-template-rows: auto 1fr; min-height: 220px; height: 40%; border-top: 1px solid var(--line); }
+  .gcode .hdr { display: flex; align-items: center; gap: 8px; padding: 6px 10px; }
+  .gcode .hdr b { flex: 1; }
+  textarea { width: 100%; height: 100%; background: #0f1114; color: #c8d0dc; border: 0; resize: none; font-family: var(--mono); font-size: 11px; padding: 8px 10px; }
+  .section-title { padding: 8px 12px; font-weight: 600; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .section-title span { color: var(--muted); font-weight: 400; margin-left: auto; font-family: var(--mono); font-size: 12px; }
+  .bridgelist { display: grid; gap: 4px; font-family: var(--mono); font-size: 12px; }
+  .bridgelist div { display: flex; justify-content: space-between; align-items: center; background: var(--panel2); padding: 3px 8px; border-radius: 4px; }
+  .bridgelist button { padding: 1px 7px; }
+  .saved { font-family: var(--mono); font-size: 12px; color: var(--ok); display: grid; gap: 2px; }
+  .removed { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Plasma Path</h1>
+  <select id="source" style="width:260px"></select>
+  <button id="uploadBtn">Upload…</button>
+  <input type="file" id="uploadFile" accept="image/*" hidden>
+  <span class="status" id="status">idle</span>
+</header>
+<main>
+  <aside class="left">
+    <details open>
+      <summary><span class="n">1</span>Source &amp; clean-up</summary>
+      <div class="body">
+        <div class="row"><label>Threshold <span id="thresholdV" class="help"></span></label><input type="range" id="threshold" min="1" max="254" step="1"></div>
+        <div class="row"><label>Blur radius (px)</label><input type="number" id="blur" min="0" max="10" step="1"></div>
+        <div class="row"><label>Remove specks under (px²)</label><input type="number" id="speck" min="0" step="10"></div>
+        <div class="row"><label>Ignore bottom band (fraction)</label><input type="number" id="bottom_band" min="0" max="0.5" step="0.01"></div>
+        <div class="row"><label>Ignore top band (fraction)</label><input type="number" id="top_band" min="0" max="0.5" step="0.01"></div>
+        <label class="check"><input type="checkbox" id="remove_frame"> Remove border frame</label>
+        <label class="check"><input type="checkbox" id="invert"> Invert (light ink on dark)</label>
+        <div class="removed" id="removed"></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="n">2</span>Trace</summary>
+      <div class="body">
+        <div class="row"><label>Drop blobs under (px²)</label><input type="number" id="turdsize" min="0" step="1"></div>
+        <div class="row"><label>Corner threshold (0 sharp – 1.33 smooth)</label><input type="number" id="alphamax" min="0" max="1.34" step="0.05"></div>
+        <div class="row"><label>Curve tolerance</label><input type="number" id="opttolerance" min="0" max="2" step="0.05"></div>
+        <div class="help" id="traceInfo"></div>
+      </div>
+    </details>
+    <details open>
+      <summary><span class="n">3</span>Cut design</summary>
+      <div class="body">
+        <div class="modes">
+          <label><input type="radio" name="mode" value="silhouette"><div><b>Silhouette plate</b><span>Outer shape is solid. Enclosed marks (eyes, nose) become holes.</span></div></label>
+          <label><input type="radio" name="mode" value="lineart"><div><b>Line art (ink is metal)</b><span>The drawn lines are what remains. Loose marks get tabs.</span></div></label>
+          <label><input type="radio" name="mode" value="stencil"><div><b>Stencil (ink is removed)</b><span>Lines are cut out of a plate. Enclosed regions get bridges.</span></div></label>
+        </div>
+        <div class="row"><label>Auto bridges per island</label><input type="number" id="auto_bridges" min="0" max="8" step="1"></div>
+        <div class="row"><label>Bridge width</label><input type="number" id="bridge_width_in" min="0.02" step="0.05"></div>
+        <div class="row" id="stencilRow"><label>Stencil plate margin</label><input type="number" id="stencil_margin_in" min="0" step="0.1"></div>
+        <div class="btns"><button id="bridgeTool">＋ Add bridge by clicking</button><button id="clearBridges">Clear manual</button></div>
+        <div class="bridgelist" id="bridgelist"></div>
+      </div>
+    </details>
+    <details open>
+      <summary><span class="n">4</span>Size &amp; kerf</summary>
+      <div class="body">
+        <div class="row"><label>Units</label><select id="units"><option value="in">inch</option><option value="mm">mm</option></select></div>
+        <div class="row"><label>Art height</label><input type="number" id="height" min="0.1" step="0.5"></div>
+        <div class="row"><label>Kerf width</label><input type="number" id="kerf" min="0" step="0.005"></div>
+        <div class="row"><label>Warn if material thinner than</label><input type="number" id="min_material" min="0" step="0.01"></div>
+        <div class="row"><label>Margin from origin</label><input type="number" id="margin" min="0" step="0.1"></div>
+        <div class="row"><label>Bed width × height</label><div style="display:flex;gap:4px"><input type="number" id="bed_w" min="1" step="1"><input type="number" id="bed_h" min="1" step="1"></div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="n">5</span>G-code (Mach3, no Z)</summary>
+      <div class="body">
+        <div class="row"><label>Feed rate (units/min)</label><input type="number" id="feed" min="1" step="5"></div>
+        <div class="row"><label>Pierce delay (s)</label><input type="number" id="pierce_delay" min="0" step="0.1"></div>
+        <label class="check"><input type="checkbox" id="dwell_ms"> Mach3 is set to G4 dwell in milliseconds</label>
+        <div class="row"><label>Lead-in length</label><input type="number" id="lead_in" min="0" step="0.05"></div>
+        <div class="row"><label>Overcut past start</label><input type="number" id="overcut" min="0" step="0.01"></div>
+        <div class="row"><label>Simplify tolerance</label><input type="number" id="simplify" min="0" step="0.001"></div>
+        <label class="check"><input type="checkbox" id="comments"> Include comments</label>
+        <div class="help">Torch fires with M3, stops with M5. Holes are cut first, counter-clockwise; outer profiles clockwise. Set torch height by hand before running.</div>
+      </div>
+    </details>
+    <details open>
+      <summary><span class="n">6</span>Save</summary>
+      <div class="body">
+        <div class="row"><label>Base name</label><input type="text" id="name"></div>
+        <label class="check"><input type="checkbox" class="out" value="clean"> Cleaned bitmap (PNG)</label>
+        <label class="check"><input type="checkbox" class="out" value="svg" checked> Traced vector (SVG)</label>
+        <label class="check"><input type="checkbox" class="out" value="dxf"> Traced vector (DXF)</label>
+        <label class="check"><input type="checkbox" class="out" value="design" checked> Cut design with bridges (SVG)</label>
+        <label class="check"><input type="checkbox" class="out" value="toolpath"> Toolpath in machine units (SVG)</label>
+        <label class="check"><input type="checkbox" class="out" value="gcode" checked> G-code (.nc)</label>
+        <label class="check"><input type="checkbox" class="out" value="settings" checked> Settings (JSON)</label>
+        <div class="btns"><button class="primary" id="saveBtn">Save to out/</button><button id="dlBtn">Download .nc</button></div>
+        <div class="saved" id="saved"></div>
+      </div>
+    </details>
+  </aside>
+
+  <section class="stage">
+    <div class="toolbar">
+      <span class="chip on" data-layer="gray"><i style="background:#888"></i>Original</span>
+      <span class="chip" data-layer="clean"><i style="background:#ddd"></i>Cleaned</span>
+      <span class="chip on" data-layer="kept"><i style="background:#5b6472"></i>Material</span>
+      <span class="chip on" data-layer="bridges"><i style="background:var(--accent)"></i>Bridges</span>
+      <span class="chip on" data-layer="cuts"><i style="background:var(--outer)"></i>Cut paths</span>
+      <span class="chip on" data-layer="rapids"><i style="background:#666"></i>Rapids</span>
+      <span class="chip on" data-layer="pierce"><i style="background:#fff;border-radius:50%"></i>Pierces</span>
+      <span class="sep"></span>
+      <button id="fitBtn">Fit</button>
+      <span class="help" id="modeHelp" style="margin-left:auto"></span>
+    </div>
+    <svg id="view" xmlns="http://www.w3.org/2000/svg">
+      <g id="g-gray"><image id="img-gray" opacity="0.25"/></g>
+      <g id="g-clean"><image id="img-clean" opacity="0.6"/></g>
+      <g id="g-kept" fill="#5b6472" fill-opacity="0.75" fill-rule="evenodd"></g>
+      <g id="g-bridges" fill="var(--accent)" fill-opacity="0.85"></g>
+      <g id="g-rapids" fill="none" stroke="#666" stroke-dasharray="6 6"></g>
+      <g id="g-cuts" fill="none"></g>
+      <g id="g-pierce" fill="#fff"></g>
+    </svg>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <aside class="right">
+    <div class="section-title">Cut paths <span id="pathCount"></span></div>
+    <div class="warnings" id="warnings"></div>
+    <div class="paths"><table><thead><tr><th></th><th>#</th><th>Type</th><th>Path</th><th>Length</th></tr></thead><tbody id="pathRows"></tbody></table></div>
+    <div class="gcode">
+      <div class="hdr"><b>G-code</b><span class="help" id="gcodeInfo"></span><button id="copyBtn">Copy</button></div>
+      <textarea id="gcode" readonly spellcheck="false"></textarea>
+    </div>
+  </aside>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const NUM = ['threshold','blur','speck','bottom_band','top_band','turdsize','alphamax','opttolerance','auto_bridges','bridge_width_in','stencil_margin_in','height','kerf','min_material','margin','bed_w','bed_h','feed','pierce_delay','lead_in','overcut','simplify'];
+const BOOL = ['remove_frame','invert','dwell_ms','comments'];
+const TEXT = ['name','units'];
+let state = {};      // params sent to the server
+let result = null;   // last server response
+let defaults = {};
+let layers = {gray:1, clean:0, kept:1, bridges:1, cuts:1, rapids:1, pierce:1};
+let bridgeMode = false;
+
+function readForm() {
+  for (const k of NUM) state[k] = parseFloat($(k).value);
+  for (const k of BOOL) state[k] = $(k).checked;
+  for (const k of TEXT) state[k] = $(k).value;
+  state.mode = document.querySelector('input[name=mode]:checked').value;
+  state.source = $('source').value;
+  $('thresholdV').textContent = state.threshold;
+  $('stencilRow').style.display = state.mode === 'stencil' ? '' : 'none';
+}
+function writeForm() {
+  for (const k of NUM) $(k).value = state[k];
+  for (const k of BOOL) $(k).checked = !!state[k];
+  for (const k of TEXT) $(k).value = state[k];
+  document.querySelector(`input[name=mode][value=${state.mode}]`).checked = true;
+  $('source').value = state.source;
+  $('thresholdV').textContent = state.threshold;
+  $('stencilRow').style.display = state.mode === 'stencil' ? '' : 'none';
+  renderBridgeList();
+}
+function persist() { try { localStorage.setItem('plasmapath', JSON.stringify(state)); } catch (e) {} }
+
+let timer = null, inflight = false, queued = false;
+function schedule(ms = 200) { clearTimeout(timer); timer = setTimeout(process, ms); }
+async function process() {
+  if (inflight) { queued = true; return; }
+  if (!state.source) return;
+  inflight = true; persist();
+  $('status').textContent = 'processing…'; $('status').className = 'status busy';
+  try {
+    const r = await fetch('/api/process', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(state)});
+    const j = await r.json();
+    if (j.error) { $('status').textContent = 'error: ' + j.error; $('status').className = 'status'; showWarnings([{t: j.error, c: 'err'}]); }
+    else { result = j; render(); $('status').textContent = `ok · ${j.ms} ms`; $('status').className = 'status'; }
+  } catch (e) { $('status').textContent = 'server unreachable'; }
+  inflight = false;
+  if (queued) { queued = false; process(); }
+}
+
+// ---------- rendering ----------
+const svgNS = 'http://www.w3.org/2000/svg';
+let fitted = false;
+function poly(pts) { return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' '); }
+function render() {
+  const {image, design, toolpath} = result;
+  const view = $('view');
+  if (!fitted) { view.setAttribute('viewBox', `0 0 ${image.w} ${image.h}`); fitted = true; }
+  for (const id of ['img-gray', 'img-clean']) { const el = $(id); el.setAttribute('width', image.w); el.setAttribute('height', image.h); }
+  $('img-gray').setAttribute('href', image.gray);
+  $('img-clean').setAttribute('href', image.clean);
+  $('g-kept').innerHTML = design.kept.map(p => `<path d="${poly(p.exterior)}Z ${p.holes.map(h => poly(h) + 'Z').join(' ')}"/>`).join('');
+  $('g-bridges').innerHTML = design.bridges.map(b => `<path d="${poly(b)}Z"/>`).join('');
+  const sw = Math.max(1.5, image.w / 500);
+  $('g-rapids').setAttribute('stroke-width', sw * 0.7);
+  $('g-rapids').innerHTML = toolpath.rapids.map(([a, b]) => `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`).join('');
+  $('g-cuts').innerHTML = toolpath.cuts.map(c => `<path data-id="${c.id}" d="${poly(c.pts_px)}" stroke="${c.type === 'outer' ? 'var(--outer)' : 'var(--hole)'}" stroke-width="${sw}"/>`).join('');
+  $('g-pierce').innerHTML = toolpath.cuts.map((c, i) => `<circle cx="${c.pts_px[0][0]}" cy="${c.pts_px[0][1]}" r="${sw * 2.2}"/><text x="${c.pts_px[0][0] + sw * 3}" y="${c.pts_px[0][1] - sw * 3}" font-size="${sw * 9}" fill="#fff">${i + 1}</text>`).join('');
+  applyLayers();
+  // stats
+  const info = toolpath.info, u = state.units;
+  $('stats').innerHTML = [
+    ['size', `${info.size[0].toFixed(2)} × ${info.size[1].toFixed(2)} ${u}`],
+    ['pieces', info.pieces], ['pierces', info.pierces],
+    ['cut', `${info.cut_length.toFixed(1)} ${u}`], ['rapid', `${info.rapid_length.toFixed(1)} ${u}`],
+    ['segments', info.segments], ['est', `${toolpath.est_minutes.toFixed(1)} min`],
+    ['scale', `${(1 / result.scale).toFixed(1)} px/${u}`],
+  ].map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join('');
+  $('traceInfo').textContent = `${result.trace.paths} shapes, ${result.trace.holes} enclosed regions, ${result.trace.ink_px.toLocaleString()} ink px, SVG ${(result.trace.svg_bytes / 1024).toFixed(1)} kB`;
+  $('removed').innerHTML = result.removed.length ? 'removed: ' + Object.entries(result.removed.reduce((a, r) => (a[r.reason] = (a[r.reason] || 0) + 1, a), {})).map(([k, v]) => `${v} ${k}`).join(', ') : 'nothing removed';
+  $('modeHelp').textContent = design.mode_help;
+  // path table
+  const order = new Map(toolpath.cuts.map((c, i) => [c.id, i + 1]));
+  $('pathRows').innerHTML = info.rings.map(r => `<tr data-id="${r.id}">
+    <td><input type="checkbox" ${r.enabled ? 'checked' : ''} data-id="${r.id}"></td>
+    <td>${order.get(r.id) || '–'}</td><td><span class="tag ${r.type}">${r.type}</span></td>
+    <td style="font-family:var(--mono)">${r.id}</td><td>${r.length.toFixed(2)}</td></tr>`).join('');
+  $('pathCount').textContent = `${info.pierces} of ${info.rings.length} enabled`;
+  const w = info.warnings.map(t => ({t, c: 'warn'}));
+  if (!w.length) w.push({t: 'No problems found. One connected piece, everything inside the bed.', c: 'ok'});
+  showWarnings(w);
+  $('gcode').value = result.gcode;
+  $('gcodeInfo').textContent = `${result.gcode.split('\n').length} lines`;
+}
+function showWarnings(list) { $('warnings').innerHTML = list.map(w => `<div class="${w.c}">${w.t}</div>`).join(''); }
+function applyLayers() {
+  for (const [k, on] of Object.entries(layers)) { $('g-' + k).style.display = on ? '' : 'none'; }
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', !!layers[c.dataset.layer]));
+}
+function renderBridgeList() {
+  $('bridgelist').innerHTML = (state.bridges || []).map((b, i) => `<div><span>manual bridge ${i + 1} @ ${b.x.toFixed(0)}, ${b.y.toFixed(0)} px</span><button data-i="${i}">✕</button></div>`).join('');
+  $('bridgelist').querySelectorAll('button').forEach(btn => btn.onclick = () => { state.bridges.splice(+btn.dataset.i, 1); renderBridgeList(); schedule(0); });
+}
+
+// ---------- events ----------
+document.querySelectorAll('aside.left input, aside.left select').forEach(el => {
+  if (el.classList.contains('out') || el.id === 'uploadFile') return;
+  el.addEventListener('input', () => { readForm(); schedule(el.type === 'range' ? 250 : 150); });
+});
+$('source').addEventListener('change', () => { readForm(); fitted = false; state.bridges = []; state.disabled = []; renderBridgeList(); schedule(0); });
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => { layers[c.dataset.layer] = !layers[c.dataset.layer]; applyLayers(); });
+$('pathRows').addEventListener('change', e => {
+  const id = e.target.dataset.id; if (!id) return;
+  state.disabled = state.disabled || [];
+  if (e.target.checked) state.disabled = state.disabled.filter(x => x !== id); else state.disabled.push(id);
+  schedule(0);
+});
+$('pathRows').addEventListener('mouseover', e => { const tr = e.target.closest('tr'); document.querySelectorAll('#g-cuts path').forEach(p => p.setAttribute('stroke-opacity', tr && p.dataset.id !== tr.dataset.id ? 0.25 : 1)); });
+$('pathRows').addEventListener('mouseleave', () => document.querySelectorAll('#g-cuts path').forEach(p => p.setAttribute('stroke-opacity', 1)));
+$('bridgeTool').onclick = () => { bridgeMode = !bridgeMode; $('bridgeTool').classList.toggle('active', bridgeMode); $('view').classList.toggle('bridge', bridgeMode); };
+$('clearBridges').onclick = () => { state.bridges = []; renderBridgeList(); schedule(0); };
+$('fitBtn').onclick = () => { fitted = false; if (result) render(); };
+$('copyBtn').onclick = () => navigator.clipboard.writeText($('gcode').value);
+$('dlBtn').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('gcode').value], {type: 'text/plain'})); a.download = (state.name || 'part') + '.nc'; a.click(); };
+$('uploadBtn').onclick = () => $('uploadFile').click();
+$('uploadFile').onchange = async () => {
+  const fd = new FormData(); fd.append('file', $('uploadFile').files[0]);
+  const j = await (await fetch('/api/upload', {method: 'POST', body: fd})).json();
+  await loadImages(); $('source').value = j.path; $('source').dispatchEvent(new Event('change'));
+};
+$('saveBtn').onclick = async () => {
+  const outputs = [...document.querySelectorAll('.out:checked')].map(c => c.value);
+  const j = await (await fetch('/api/save', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({params: state, outputs})})).json();
+  $('saved').innerHTML = (j.saved || []).map(s => `<div>✓ ${s}</div>`).join('') || `<div style="color:var(--err)">${j.error || 'nothing saved'}</div>`;
+};
+
+// pan / zoom / bridge click on the preview
+const view = $('view');
+let drag = null;
+function svgPoint(e) { const pt = view.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(view.getScreenCTM().inverse()); }
+view.addEventListener('mousedown', e => { drag = {x: e.clientX, y: e.clientY, vb: view.viewBox.baseVal, moved: false}; });
+window.addEventListener('mousemove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+  if (!drag.moved) return;
+  const vb = view.viewBox.baseVal, k = vb.width / view.clientWidth;
+  view.setAttribute('viewBox', `${vb.x - dx * k} ${vb.y - dy * k} ${vb.width} ${vb.height}`);
+  drag.x = e.clientX; drag.y = e.clientY;
+});
+window.addEventListener('mouseup', e => {
+  if (drag && !drag.moved && bridgeMode && result) {
+    const p = svgPoint(e); state.bridges = state.bridges || []; state.bridges.push({x: p.x, y: p.y}); renderBridgeList(); schedule(0);
+  }
+  drag = null;
+});
+view.addEventListener('wheel', e => {
+  e.preventDefault();
+  const vb = view.viewBox.baseVal, p = svgPoint(e), f = e.deltaY > 0 ? 1.15 : 1 / 1.15;
+  view.setAttribute('viewBox', `${p.x - (p.x - vb.x) * f} ${p.y - (p.y - vb.y) * f} ${vb.width * f} ${vb.height * f}`);
+}, {passive: false});
+
+// ---------- boot ----------
+async function loadImages() {
+  const j = await (await fetch('/api/images')).json();
+  defaults = j.defaults;
+  $('source').innerHTML = j.images.map(p => `<option value="${p}">${p}</option>`).join('');
+  return j;
+}
+(async () => {
+  const j = await loadImages();
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('plasmapath')); } catch (e) {}
+  state = Object.assign({}, defaults, saved || {});
+  if (!j.images.includes(state.source)) state.source = j.images[0] || '';
+  state.bridges = state.bridges || []; state.disabled = state.disabled || [];
+  for (const [k, v] of new URLSearchParams(location.search)) { if (k in defaults) state[k] = (k === 'bridges' || k === 'disabled') ? JSON.parse(v) : (typeof defaults[k] === 'boolean' ? v === 'true' : (typeof defaults[k] === 'number' ? parseFloat(v) : v)); }
+  writeForm(); readForm(); process();
+})();
+</script>
+</body>
+</html>
