@@ -10,6 +10,23 @@ The version is in three places that must agree: `SKILL.md` frontmatter
 (`metadata.version`), `scripts/pp.py` (`__version__`), and this file. The
 second comment line of every `.nc` file records the version that made it.
 
+## 1.2.0 - 2026-09-23
+
+Added
+- `edit` stage: erase or keep rectangles, polygons and circles; paint
+  shapes and lines; smooth a region or everything; thicken, thin, fill holes,
+  outline, invert, mirror, rotate. Before/after preview.
+- `adopt` stage: hand any black-and-white image made with your own Python
+  back into the pipeline as the cleaned drawing.
+- A faint 0.1 coordinate grid on the cleanup preview so spots can be named
+  as fractions.
+
+Changed
+- Instructions rewritten: the drawing is Claude's to shape however the
+  person wants (own numpy/scipy/Pillow code encouraged; pip allowed as a
+  fallback); only the cut path and G-code stay locked to the script. Claude
+  is told never to say a part of the picture cannot be changed.
+
 ## 1.1.0 - 2026-09-23
 
 Added

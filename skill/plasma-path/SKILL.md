@@ -2,7 +2,7 @@
 name: plasma-path
 description: Turn a picture (coloring page, logo, clip art, sketch, scan, or a photo of a drawing) into a ready-to-run Mach3 G-code program (.nc) for a Langmuir CrossFire plasma table, through a short conversation with previews at every step. Use this whenever the user shares an image and mentions cutting it, plasma, CNC, the CrossFire, Mach3, G-code, .nc or .tap files, a metal sign, a stencil, a silhouette, or asks "can you cut this" or "make this cuttable". Also use it to change a cut already made with it (size, which parts get cut, bridges, material) or when they ask what cut settings to use.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Plasma Path
@@ -12,18 +12,29 @@ picture and want metal. Your job is to run the bundled pipeline, look at every
 preview it makes, ask the few questions only they can answer, and hand back an
 `.nc` file plus a picture of exactly what the torch will do.
 
-The one rule that keeps this safe: **all geometry and all G-code come from
-`scripts/pp.py`.** You choose settings, look at pictures and talk to the person.
-You never write or edit G-code by hand, never estimate a coordinate, and never
-add Z moves or torch-height commands (the machine has no Z axis; torch height
-is set by hand). If the script cannot do what the person wants, say so and offer
-the nearest thing it can do.
+Two different attitudes apply to the two halves of the job:
+
+- **The drawing is yours to shape.** Cleaning, editing, restyling, combining
+  and redrawing the picture is exactly what the person cannot do themselves
+  and what they came to you for. The script has flags for the common cases,
+  and for everything else you write your own Python with numpy, scipy and
+  Pillow, then hand the result back to the pipeline (`adopt`). Never tell the
+  person something in the picture cannot be changed; if a nub, a stem, a
+  background or a stray line bothers them, remove it. They see a preview
+  before anything is cut, so an edit is never a risk.
+- **The cut path and the G-code come only from `scripts/pp.py`.** You never
+  write or edit G-code by hand, never estimate a coordinate, and never add Z
+  moves or torch-height commands (the machine has no Z axis; torch height is
+  set by hand). This is what makes the output as trustworthy as the parts
+  already cut with it.
 
 ## Setup
 
 - The script is `scripts/pp.py` next to this file. It needs only numpy, scipy
-  and Pillow, which are already installed; the tracer is vendored. Do not pip
-  install anything.
+  and Pillow, which are already installed; the tracer and fonts are vendored.
+  For your own image work those three are usually enough; if a job really
+  wants OpenCV or scikit-image, try `pip install` once and fall back to
+  numpy/scipy if the sandbox has no network.
 - Make one job folder per picture, inside the outputs directory when the
   environment has one (for example `/mnt/user-data/outputs/<short-name>/`),
   otherwise `./plasma-jobs/<short-name>/`. Every stage writes its previews and
@@ -78,6 +89,54 @@ as the drawing (names, `#rrggbb` or `r,g,b`; `--color-tol 40` strict, `120`
 loose) and `--color-drop blue` erases a colour before thresholding, for
 example grid lines or a coloured background. Numbers are re-assigned on every
 run, so pick from the latest preview.
+
+### 1a. Shape the drawing however the person wants
+
+The cleaned drawing is `clean.png` in the job folder: a plain PNG, black is
+ink. The preview's right half carries a faint 0.1 grid so you can name any
+spot as fractions of width and height ("the nub at about 0.62, 0.15").
+
+For the common edits, `edit` has ready-made operations and shows a before
+and after (red = removed, green = added):
+
+```
+python3 scripts/pp.py edit --job JOB --erase 0.58,0.10,0.66,0.18          # a rectangle
+python3 scripts/pp.py edit --job JOB --erase-poly "0.60,0.12 0.66,0.10 0.65,0.19"
+python3 scripts/pp.py edit --job JOB --smooth-region 0.55,0.05,0.70,0.25:5  # knock a nub off, fill a nick
+python3 scripts/pp.py edit --job JOB --paint-line "0.30,0.90 0.70,0.90:0.02" # draw a bar or a missing stroke
+python3 scripts/pp.py edit --job JOB --fill-all-holes --outline 10            # solid shape -> outline drawing
+python3 scripts/pp.py edit --job JOB --thicken 3 --fill-holes-under 400       # fatten thin lines, close pinholes
+```
+
+Also `--keep-rect`/`--keep-poly` (erase everything else), `--paint-rect`,
+`--paint-poly`, `--erase-circle`, `--thin`, `--smooth`, `--invert`,
+`--mirror` (cut from the back), `--rotate`. Edits stack; re-run `clean` to
+start over.
+
+For anything else, write it yourself. Typical asks and how to do them:
+
+- **Photo of an object to a silhouette**: threshold or colour-pick, keep the
+  largest mark, `--fill-all-holes`, then smooth.
+- **Photo or drawing to line art**: gradient or Canny-style edges (numpy or
+  scipy.ndimage), threshold, thicken to a cuttable width, adopt.
+- **A stem, hand, or background touching the subject**: erase it with a
+  polygon, or erode until it separates, keep the largest mark, dilate back.
+- **Stylise or simplify**: heavy blur then threshold gives a posterised,
+  rounded look; `--outline` gives a stencil-like outline; posterize with
+  Pillow and pick the levels; mirror or rotate; combine two pictures by
+  pasting one bitmap into another at a chosen spot.
+- **Redraw a part by hand**: paint the replacement with Pillow's ImageDraw
+  (polygons, ellipses, arcs, text in the bundled fonts) onto the bitmap.
+
+After your own code, hand the bitmap back with
+`python3 scripts/pp.py adopt EDITED.png --job JOB` (black = ink). Then show
+the preview and ask if it is right. You are not the plasma cutter; iterating
+on the picture with the person is the point.
+
+What you cannot do is generate a new image from a text description or
+"redraw this in a cleaner style" the way an image model would. Say so
+plainly when that is what is being asked, then offer the nearest pixel
+operation (smooth, simplify, outline, retrace by hand with shapes).
 
 ### 1b. Or make the design from nothing
 

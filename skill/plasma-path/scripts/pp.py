@@ -23,7 +23,7 @@ torch, G4 for the pierce dwell, G0 rapids, G1 cuts.
 """
 from __future__ import annotations
 
-__version__ = "1.1.0"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
+__version__ = "1.2.0"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
 
 import argparse
 import json
@@ -159,6 +159,21 @@ def fit_preview(img, max_w=1400):
     if img.width > max_w:
         s = max_w / img.width
         img = img.resize((max_w, int(img.height * s)), Image.LANCZOS)
+    return img
+
+
+def draw_grid(img, ox=0):
+    """Faint 10 x 10 grid with 0.1 labels, so a spot can be named as fractions (x, y) of the image."""
+    d = ImageDraw.Draw(img)
+    W, H = img.width - ox, img.height
+    fs = font(max(9, int(W / 90)))
+    for k in range(1, 10):
+        x = ox + W * k / 10
+        y = H * k / 10
+        d.line([(x, 0), (x, H)], fill=(215, 215, 235), width=1)
+        d.line([(ox, y), (ox + W, y)], fill=(215, 215, 235), width=1)
+        d.text((x + 2, 2), f"{k / 10:.1f}", fill=(120, 120, 160), font=fs)
+        d.text((ox + 2, y + 2), f"{k / 10:.1f}", fill=(120, 120, 160), font=fs)
     return img
 
 
@@ -365,6 +380,7 @@ def cmd_clean(a):
     if crop:
         d.rectangle(crop, outline=(40, 120, 220), width=max(2, W // 300))
     right = Image.fromarray(np.where(ink, 0, 255).astype(np.uint8)).convert("RGB")
+    draw_grid(right)
     if 1 < len(marks) <= 60:
         dr = ImageDraw.Draw(right)
         fm = font(max(11, int(W / 55)))
@@ -1349,6 +1365,168 @@ def cmd_make(a):
 # show
 # --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+# edit and adopt: shape the drawing freely
+# --------------------------------------------------------------------------
+
+def _poly_px(spec, W, H):
+    pts = []
+    for tok in spec.replace(";", " ").split():
+        x, y = tok.split(",")
+        pts.append((float(x) * W, float(y) * H))
+    return pts
+
+
+def _rect_px(spec, W, H):
+    x0, y0, x1, y1 = [float(v) for v in spec.split(",")]
+    return [x0 * W, y0 * H, x1 * W, y1 * H]
+
+
+def cmd_edit(a):
+    """Apply simple edits to the cleaned bitmap (black = ink). Coordinates are fractions of the image."""
+    job = a.job
+    st = load_state(job)
+    if not os.path.exists(out(job, "clean.png")):
+        fail("nothing to edit yet: run clean, make or adopt first")
+    ink = np.array(Image.open(out(job, "clean.png")).convert("L")) < 128
+    before = ink.copy()
+    H, W = ink.shape
+    applied = []
+
+    def mask_from(draw_fn):
+        m = Image.new("L", (W, H), 0)
+        draw_fn(ImageDraw.Draw(m))
+        return np.array(m) > 0
+
+    for spec in a.erase or []:
+        ink &= ~mask_from(lambda d: d.rectangle(_rect_px(spec, W, H), fill=255))
+        applied.append(f"erase rect {spec}")
+    for spec in a.erase_poly or []:
+        ink &= ~mask_from(lambda d: d.polygon(_poly_px(spec, W, H), fill=255))
+        applied.append(f"erase polygon {spec}")
+    for spec in a.erase_circle or []:
+        cx, cy, r = [float(v) for v in spec.split(",")]
+        rp = r * W  # radius as a fraction of the width
+        ink &= ~mask_from(lambda d: d.ellipse([cx * W - rp, cy * H - rp, cx * W + rp, cy * H + rp], fill=255))
+        applied.append(f"erase circle {spec}")
+    for spec in a.keep_poly or []:
+        ink &= mask_from(lambda d: d.polygon(_poly_px(spec, W, H), fill=255))
+        applied.append(f"keep only polygon {spec}")
+    for spec in a.keep_rect or []:
+        ink &= mask_from(lambda d: d.rectangle(_rect_px(spec, W, H), fill=255))
+        applied.append(f"keep only rect {spec}")
+    for spec in a.paint_poly or []:
+        ink |= mask_from(lambda d: d.polygon(_poly_px(spec, W, H), fill=255))
+        applied.append(f"paint polygon {spec}")
+    for spec in a.paint_rect or []:
+        ink |= mask_from(lambda d: d.rectangle(_rect_px(spec, W, H), fill=255))
+        applied.append(f"paint rect {spec}")
+    for spec in a.paint_line or []:
+        parts = spec.split(":")
+        width = float(parts[1]) * W if len(parts) > 1 else max(2, W / 150)
+        ink |= mask_from(lambda d: d.line(_poly_px(parts[0], W, H), fill=255, width=int(width)))
+        applied.append(f"paint line {spec}")
+    for spec in a.smooth_region or []:
+        # opening then closing inside a rectangle, to knock off nubs and fill nicks
+        x0, y0, x1, y1 = [int(v) for v in _rect_px(spec.split(":")[0], W, H)]
+        r = float(spec.split(":")[1]) if ":" in spec else 3
+        sub = ink[y0:y1, x0:x1]
+        sub = ndi.binary_closing(ndi.binary_opening(sub, structure=disk(r)), structure=disk(r))
+        ink[y0:y1, x0:x1] = sub
+        applied.append(f"smooth region {spec}")
+    if a.smooth:
+        ink = ndi.binary_closing(ndi.binary_opening(ink, structure=disk(a.smooth)), structure=disk(a.smooth))
+        applied.append(f"smooth all {a.smooth}px")
+    if a.thicken:
+        ink = dilate(ink, a.thicken)
+        applied.append(f"thicken {a.thicken}px")
+    if a.thin:
+        ink = erode(ink, a.thin)
+        applied.append(f"thin {a.thin}px")
+    if a.fill_holes_under:
+        hm = holes_of(ink)
+        lab, n = label(hm)
+        if n:
+            areas = ndi.sum(hm, lab, index=np.arange(1, n + 1))
+            small = np.nonzero(areas < a.fill_holes_under)[0] + 1
+            ink |= np.isin(lab, small)
+        applied.append(f"fill holes under {a.fill_holes_under}px")
+    if a.fill_all_holes:
+        ink = ndi.binary_fill_holes(ink)
+        applied.append("fill all enclosed areas")
+    if a.outline:
+        ink = ink & ~erode(ink, a.outline)
+        applied.append(f"outline only, {a.outline}px wide")
+    if a.invert:
+        ink = ~ink
+        applied.append("invert")
+    if a.mirror:
+        ink = ink[:, ::-1]
+        applied.append("mirror left-right")
+    if a.rotate:
+        im = Image.fromarray((ink * 255).astype(np.uint8)).rotate(a.rotate, resample=Image.BILINEAR, expand=True, fillcolor=0)
+        ink = np.array(im) > 127
+        applied.append(f"rotate {a.rotate}")
+    if not applied:
+        fail("no edit given; see --help for the operations")
+
+    Image.fromarray(np.where(ink, 0, 255).astype(np.uint8)).save(out(job, "clean.png"))
+    _edit_preview(before, ink, job)
+    st.setdefault("clean", {}).setdefault("edits", []).extend(applied)
+    st["clean"].setdefault("result", {})["marks"] = int(label(ink)[1])
+    st.pop("design", None)
+    st.pop("gcode", None)
+    save_state(job, st)
+    changed = int((before != ink).sum())
+    emit([f"edit: {'; '.join(applied)}", f"changed {changed} px; {label(ink)[1]} marks now",
+          f"preview: {out(job, 'clean_preview.png')}  (left: before, red = removed, green = added; right: after, with the coordinate grid)"],
+         {"stage": "edit", "applied": applied, "changed_px": changed, "preview": out(job, "clean_preview.png")})
+
+
+def _edit_preview(before, after, job):
+    H, W = after.shape
+    Hb, Wb = before.shape
+    left = np.full((Hb, Wb, 3), 255, np.uint8)
+    left[before] = (0, 0, 0)
+    if before.shape == after.shape:
+        left[before & ~after] = (230, 60, 60)
+        left[after & ~before] = (40, 170, 70)
+    right = Image.fromarray(np.where(after, 0, 255).astype(np.uint8)).convert("RGB")
+    draw_grid(right)
+    gap = 16
+    pv = Image.new("RGB", (Wb + W + gap, max(Hb, H)), (200, 200, 200))
+    pv.paste(Image.fromarray(left), (0, 0))
+    pv.paste(right, (Wb + gap, 0))
+    fit_preview(pv, 1600).save(out(job, "clean_preview.png"))
+
+
+def cmd_adopt(a):
+    """Take any black-and-white image you made yourself as the cleaned drawing (black = ink)."""
+    job = a.job
+    os.makedirs(job, exist_ok=True)
+    gray = load_gray(a.image)
+    ink = gray < a.threshold
+    if a.invert:
+        ink = ~ink
+    if ink.mean() > 0.5 and not a.invert and a.auto_invert:
+        ink = ~ink
+    Image.fromarray(np.where(ink, 0, 255).astype(np.uint8)).save(out(job, "clean.png"))
+    right = Image.fromarray(np.where(ink, 0, 255).astype(np.uint8)).convert("RGB")
+    draw_grid(right)
+    fit_preview(right, 1200).save(out(job, "clean_preview.png"))
+    st = load_state(job)
+    st["source"] = os.path.abspath(a.image)
+    st["image"] = {"w": int(ink.shape[1]), "h": int(ink.shape[0])}
+    st["clean"] = {"adopted": os.path.abspath(a.image), "threshold": a.threshold,
+                   "result": {"marks": int(label(ink)[1]), "removed": {}, "ink_fraction": round(float(ink.mean()), 4)}}
+    st.pop("design", None)
+    st.pop("gcode", None)
+    save_state(job, st)
+    emit([f"adopt: {a.image} -> {ink.shape[1]}x{ink.shape[0]} px, {label(ink)[1]} marks, ink fraction {ink.mean():.3f}",
+          f"preview: {out(job, 'clean_preview.png')}"],
+         {"stage": "adopt", "marks": int(label(ink)[1]), "preview": out(job, "clean_preview.png")})
+
+
 def cmd_show(a):
     st = load_state(a.job)
     if not st:
@@ -1437,6 +1615,36 @@ def main(argv=None):
     mk.add_argument("--hole", action="append", metavar="DIA,X,Y", help="round hole: diameter and centre offset from the shape centre")
     mk.add_argument("--bar", type=float, default=0.0, help="raised text only: thickness of a bar under the letters that joins them into one part")
     mk.set_defaults(fn=cmd_make)
+
+    e = sub.add_parser("edit", help="edit the cleaned drawing; coordinates are fractions 0-1 of width and height, read off the preview grid")
+    e.add_argument("--job", required=True)
+    e.add_argument("--erase", action="append", metavar="x0,y0,x1,y1", help="erase a rectangle")
+    e.add_argument("--erase-poly", dest="erase_poly", action="append", metavar='"x,y x,y x,y"', help="erase a polygon")
+    e.add_argument("--erase-circle", dest="erase_circle", action="append", metavar="cx,cy,r", help="erase a circle (r as a fraction of width)")
+    e.add_argument("--keep-rect", dest="keep_rect", action="append", metavar="x0,y0,x1,y1", help="erase everything outside a rectangle")
+    e.add_argument("--keep-poly", dest="keep_poly", action="append", metavar='"x,y x,y x,y"', help="erase everything outside a polygon")
+    e.add_argument("--paint-rect", dest="paint_rect", action="append", metavar="x0,y0,x1,y1", help="add ink in a rectangle")
+    e.add_argument("--paint-poly", dest="paint_poly", action="append", metavar='"x,y x,y x,y"', help="add ink in a polygon")
+    e.add_argument("--paint-line", dest="paint_line", action="append", metavar='"x,y x,y[:width]"', help="draw a line (width as a fraction of width)")
+    e.add_argument("--smooth-region", dest="smooth_region", action="append", metavar="x0,y0,x1,y1[:px]", help="knock nubs and nicks off inside a rectangle")
+    e.add_argument("--smooth", type=float, default=0, help="smooth everything by this many px")
+    e.add_argument("--thicken", type=float, default=0, help="grow all ink by px")
+    e.add_argument("--thin", type=float, default=0, help="shrink all ink by px")
+    e.add_argument("--fill-holes-under", dest="fill_holes_under", type=int, default=0, help="fill enclosed white areas smaller than N px")
+    e.add_argument("--fill-all-holes", dest="fill_all_holes", action="store_true", help="fill every enclosed white area (outline becomes solid)")
+    e.add_argument("--outline", type=float, default=0, help="keep only an outline this many px wide (solid becomes line art)")
+    e.add_argument("--invert", action="store_true")
+    e.add_argument("--mirror", action="store_true", help="mirror left-right (for cutting from the back)")
+    e.add_argument("--rotate", type=float, default=0, help="degrees counter-clockwise")
+    e.set_defaults(fn=cmd_edit)
+
+    ad = sub.add_parser("adopt", help="use a black-and-white image you produced yourself as the cleaned drawing (black = ink)")
+    ad.add_argument("image")
+    ad.add_argument("--job", required=True)
+    ad.add_argument("--threshold", type=int, default=128)
+    ad.add_argument("--invert", action="store_true")
+    ad.add_argument("--no-auto-invert", dest="auto_invert", action="store_false", help="do not flip when the image is mostly black")
+    ad.set_defaults(fn=cmd_adopt)
 
     s = sub.add_parser("show", help="print the job state")
     s.add_argument("--job", required=True)
