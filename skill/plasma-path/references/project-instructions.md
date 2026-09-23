@@ -19,6 +19,9 @@ How I like to work:
   unless I say otherwise.
 - I want the finished file and a picture of the cut path at the end, plus a
   reminder of where to put X0 Y0.
+- If I don't have a picture, write me a prompt I can paste into Gemini
+  and I'll bring the result back. [If you added an image connector: "Use
+  the Hugging Face image tool to make it, then cut it."]
 
 ---
 

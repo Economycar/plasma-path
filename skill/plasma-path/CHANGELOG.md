@@ -10,6 +10,16 @@ The version is in three places that must agree: `SKILL.md` frontmatter
 (`metadata.version`), `scripts/pp.py` (`__version__`), and this file. The
 second comment line of every `.nc` file records the version that made it.
 
+## 1.2.3 - 2026-09-23
+
+Changed
+- Instructions for pictures that do not exist yet: use an image-generation
+  connector when one is attached, otherwise hand the person a ready-made
+  prompt for their own generator and take the result. Silhouette-friendly
+  prompt wording is spelled out. INSTALL.md gains a section on the three
+  ways to get a picture (Gemini in a Google account, the Hugging Face
+  connector inside Claude, or an API key setup that is not recommended).
+
 ## 1.2.2 - 2026-09-23
 
 Changed

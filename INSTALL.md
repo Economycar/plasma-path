@@ -53,6 +53,53 @@ You can change anything afterwards by asking: bigger, different material,
 different parts, a different picture edit. Nothing is cut until you load
 the file in Mach3 yourself, so it's safe to experiment.
 
+## Getting a picture when you don't have one
+
+Claude can't draw pictures itself (no Claude app can), but it can turn any
+picture into a cut file, and it can make simple shapes and text on its own
+("a 10 inch circle with WELCOME cut out"). For anything else, three
+options, easiest first:
+
+**1. Use Gemini in your Google account, then drop the picture in.** No
+setup. Go to gemini.google.com (or the Gemini app), sign in with your
+Google account, and ask for the picture with wording like this:
+
+> A flat black silhouette of a bass jumping out of water, on a plain white
+> background. No shading, no gradients, no outline strokes, no text. Simple,
+> bold shapes, all connected into one piece, centered.
+
+Download the result and attach it in your Plasma Path chat. Claude will
+clean it up and take it from there. If you're not sure how to word it, ask
+Claude in the Plasma Path chat: "write me a Gemini prompt for a silhouette
+of a bass" and paste what it gives you. Tips: "silhouette", "black on
+white", "no shading" and "connected into one piece" are what make a picture
+easy to cut. If the result has thin whiskers or floating dots, ask Gemini
+for "thicker, simpler shapes" or let Claude remove them.
+
+**2. Generate inside Claude with the Hugging Face connector.** This works
+in the same chat, but takes a one-time setup and a paid Claude plan (Pro or
+Max), and the image models are not Google's:
+
+1. Make a free account at huggingface.co.
+2. In Claude: Settings, then Connectors, then *Add custom connector*. For
+   the URL enter `https://huggingface.co/mcp?login` and sign in when asked.
+3. On huggingface.co/settings/mcp, add an image tool such as
+   *mcp-tools/FLUX.1-Krea-dev* or *mcp-tools/qwen-image*.
+4. In a Plasma Path chat, say "generate a black silhouette of a bass with
+   the Hugging Face image tool, then make it a 12 inch cut file". Claude
+   generates, then converts. Your Hugging Face account comes with free
+   credits for this.
+
+**3. Not recommended: a Gemini API key with a local server.** It is
+possible to wire Google's own image model (Nano Banana) into Claude through
+an API key from Google AI Studio and a small program installed on your
+computer. That is the kind of thing that breaks on the next app update,
+which is exactly what this skill was built to avoid. Ask whoever maintains
+the skill if you really want it.
+
+Whichever way the picture arrives, everything after that is the same
+conversation.
+
 ## Updating to a new version
 
 1. In Claude, open Customize, then Skills, and **remove the old

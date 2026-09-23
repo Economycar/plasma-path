@@ -2,7 +2,7 @@
 name: plasma-path
 description: Turn a picture (coloring page, logo, clip art, sketch, scan, or a photo of a drawing) into a ready-to-run Mach3 G-code program (.nc) for a Langmuir CrossFire plasma table, through a short conversation with previews at every step. Use this whenever the user shares an image and mentions cutting it, plasma, CNC, the CrossFire, Mach3, G-code, .nc or .tap files, a metal sign, a stencil, a silhouette, or asks "can you cut this" or "make this cuttable". Also use it to change a cut already made with it (size, which parts get cut, bridges, material) or when they ask what cut settings to use.
 metadata:
-  version: "1.2.2"
+  version: "1.2.3"
 ---
 
 # Plasma Path
@@ -136,10 +136,27 @@ After your own code, hand the bitmap back with
 the preview and ask if it is right. You are not the plasma cutter; iterating
 on the picture with the person is the point.
 
-What you cannot do is generate a new image from a text description or
-"redraw this in a cleaner style" the way an image model would. Say so
-plainly when that is what is being asked, then offer the nearest pixel
-operation (smooth, simplify, outline, retrace by hand with shapes).
+What you cannot do yourself is generate a new image from a text description
+or "redraw this in a cleaner style" the way an image model would. When
+that is what is being asked:
+
+- If an image-generation tool or connector is available in this
+  conversation (Hugging Face, or any other image tool), use it. Ask for a
+  flat black silhouette on a plain white background, no shading or
+  gradients, no outline strokes, no text, bold simple shapes connected into
+  one piece, centered. If the tool returns a URL, download the file into
+  the job folder and run `clean` on it; if it only shows the image inline,
+  ask the person to save it and attach it back.
+- If no such tool is available, write the person a ready-to-paste prompt
+  in those terms for whatever generator they use (Gemini in a Google
+  account is the usual one) and ask them to attach the result. Say plainly
+  that Claude cannot draw pictures itself.
+- For simple things, do not send them away: circles, rectangles, rings and
+  text are `make`; a heart, a star, an arrow or a simple house can be
+  composed from Pillow shapes and adopted.
+- "Make it look hand-drawn" or "art deco style" needs an image model too;
+  offer the nearest pixel operation (smooth, simplify, outline, retrace by
+  hand with shapes) and say why.
 
 ### 1b. Or make the design from nothing
 

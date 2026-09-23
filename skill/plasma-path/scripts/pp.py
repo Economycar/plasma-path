@@ -23,7 +23,7 @@ torch, G4 for the pierce dwell, G0 rapids, G1 cuts.
 """
 from __future__ import annotations
 
-__version__ = "1.2.2"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
+__version__ = "1.2.3"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
 
 import argparse
 import json
