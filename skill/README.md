@@ -41,15 +41,20 @@ Git tags mirror the packages: `skill-v1.1.0` is the commit that produced
 
 ## Install in Claude Code (from GitHub)
 
-The repository is a Claude Code plugin marketplace. Inside Claude Code:
+The repository is a Claude Code plugin marketplace. From a terminal:
 
 ```
-/plugin marketplace add Economycar/plasma-path
-/plugin install plasma-path@plasma-path
+claude plugin marketplace add Economycar/plasma-path
+claude plugin install plasma-path@plasma-path
 ```
 
-or from a terminal, `claude plugin install plasma-path@plasma-path` after
-adding the marketplace. Later updates: `claude plugin update plasma-path`.
+Inside a Claude Code session the same two steps are `/plugin marketplace
+add Economycar/plasma-path` and `/plugin install plasma-path@plasma-path`.
+The person can also just ask Claude Code to do it ("add the plasma-path
+plugin from the Economycar/plasma-path marketplace"). Later updates:
+`claude plugin marketplace update plasma-path` then
+`claude plugin update plasma-path@plasma-path`. Verified 2026-09-23: the
+install resolves to the tagged version and the skill loads.
 The first run on that computer needs numpy, scipy and Pillow; the skill
 checks and tells Claude to install them if missing. Job folders land in
 `./plasma-jobs/` inside whatever folder Claude Code was started in.
