@@ -10,6 +10,13 @@ The version is in three places that must agree: `SKILL.md` frontmatter
 (`metadata.version`), `scripts/pp.py` (`__version__`), and this file. The
 second comment line of every `.nc` file records the version that made it.
 
+## 1.2.4 - 2026-09-24
+
+Fixed
+- `make` shrinks text to fit inside the shape instead of letting it run off
+  the edge, and reports the height it used. `--no-fit` forces the given
+  height.
+
 ## 1.2.3 - 2026-09-23
 
 Changed

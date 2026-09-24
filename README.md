@@ -6,7 +6,8 @@ offset for kerf, and produce G-code for a **Langmuir CrossFire (original)
 running Mach3 with no Z axis**. The tool is a local web app called Plasma Path.
 
 Started 2026-09-21. See `docs/05-session-log.md` for what happened when.
-If you just want to use the Claude skill, read [INSTALL.md](INSTALL.md).
+If you just want to use the Claude skill, read [INSTALL.md](INSTALL.md)
+to set it up and [GUIDE.md](GUIDE.md) for a tour of what it can do.
 
 ## Quick start
 

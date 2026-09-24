@@ -2,7 +2,7 @@
 name: plasma-path
 description: Turn a picture (coloring page, logo, clip art, sketch, scan, or a photo of a drawing) into a ready-to-run Mach3 G-code program (.nc) for a Langmuir CrossFire plasma table, through a short conversation with previews at every step. Use this whenever the user shares an image and mentions cutting it, plasma, CNC, the CrossFire, Mach3, G-code, .nc or .tap files, a metal sign, a stencil, a silhouette, or asks "can you cut this" or "make this cuttable". Also use it to change a cut already made with it (size, which parts get cut, bridges, material) or when they ask what cut settings to use.
 metadata:
-  version: "1.2.3"
+  version: "1.2.4"
 ---
 
 # Plasma Path
@@ -174,7 +174,8 @@ python3 scripts/pp.py make --job JOB --text "BOB'S|GARAGE" --text-mode raised \
 - Shapes: `circle` (diameter), `rect` (`--size W,H`, `--corner R`), `ring`
   (`--ring-width`), or `none` for text alone.
 - Text: `|` separates lines; `--text-height` is the capital-letter height in
-  units; `--text-at x,y` moves the text centre. Fonts are metric twins of
+  units (shrunk automatically if it would not fit inside the shape; the
+  summary says so); `--text-at x,y` moves the text centre. Fonts are metric twins of
   Arial (`arial`, `arial-bold`), Times (`times`) and Courier (`courier`), plus
   `sans`, `sans-bold`, `serif-bold`, `mono-bold`, or a `.ttf` the person
   uploads. Say "an Arial-compatible font" rather than "Arial" when you hand

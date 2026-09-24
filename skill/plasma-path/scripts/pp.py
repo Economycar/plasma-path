@@ -23,7 +23,7 @@ torch, G4 for the pierce dwell, G0 rapids, G1 cuts.
 """
 from __future__ import annotations
 
-__version__ = "1.2.3"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
+__version__ = "1.2.4"   # keep in step with SKILL.md metadata.version and CHANGELOG.md
 
 import argparse
 import json
@@ -1299,16 +1299,30 @@ def cmd_make(a):
     metal = np.array(canvas) > 0
 
     info = {"shape": a.shape, "width": round(W_u, 3), "height": round(H_u, 3), "units": u}
+    fitted = None
     if a.text:
-        fnt, fname = text_font(a.font, a.text_height * ppu)
         lines = a.text.replace("\\n", "\n").split("\n") if "\\n" in a.text or "\n" in a.text else a.text.split("|")
         gap = a.line_gap * ppu
-        heights, widths = [], []
-        for ln in lines:
-            l, t, r, b = d.textbbox((0, 0), ln, font=fnt)
-            widths.append(r - l)
-            heights.append(b - t)
-        total_h = sum(heights) + gap * (len(lines) - 1)
+        text_h = a.text_height
+
+        def measure(th):
+            f_, fname_ = text_font(a.font, th * ppu)
+            hs, ws = [], []
+            for ln in lines:
+                l, t, r, b = d.textbbox((0, 0), ln, font=f_)
+                ws.append(r - l)
+                hs.append(b - t)
+            return f_, fname_, hs, ws, sum(hs) + gap * (len(lines) - 1)
+        fnt, fname, heights, widths, total_h = measure(text_h)
+        if a.shape != "none" and a.fit:
+            # keep the text inside the shape with a margin; a circle is narrower away from its middle
+            usable_w = (x1 - x0) * (0.80 if a.shape in ("circle", "ring") else 0.88)
+            usable_h = (y1 - y0) * (0.70 if a.shape in ("circle", "ring") else 0.85)
+            scale = min(1.0, usable_w / max(widths), usable_h / total_h)
+            if scale < 0.999:
+                text_h = round(text_h * scale, 3)
+                fnt, fname, heights, widths, total_h = measure(text_h)
+                fitted = text_h
         cx = (x0 + x1) / 2 + a.text_at[0] * ppu
         cy = (y0 + y1) / 2 - a.text_at[1] * ppu
         tcanvas = Image.new("L", (W, H), 0)
@@ -1331,8 +1345,10 @@ def cmd_make(a):
             metal &= ~tmask
         else:
             metal |= tmask
-        info.update({"text": a.text, "font": fname, "text_height": a.text_height, "text_mode": a.text_mode,
+        info.update({"text": a.text, "font": fname, "text_height": text_h, "text_mode": a.text_mode,
                      "text_size": [round(max(widths) / ppu, 3), round(total_h / ppu, 3)]})
+        if fitted:
+            info["note"] = f"text height reduced from {a.text_height:g} to {fitted:g} {u} so the text fits inside the shape (--no-fit to force)"
         if a.shape != "none" and max(widths) > (x1 - x0) * 0.95:
             info["warning"] = "text is wider than the shape"
     holes = []
@@ -1370,9 +1386,10 @@ def cmd_make(a):
     st.pop("gcode", None)
     save_state(job, st)
     emit([
-        (f"make: {a.shape} {W_u:g} x {H_u:g} {u}" if a.shape != "none" else "make: text only") + (f", text '{a.text}' {a.text_height:g} {u} tall ({info.get('font')}), {a.text_mode}" if a.text else "")
+        (f"make: {a.shape} {W_u:g} x {H_u:g} {u}" if a.shape != "none" else "make: text only") + (f", text '{a.text}' {info.get('text_height', a.text_height):g} {u} tall ({info.get('font')}), {a.text_mode}" if a.text else "")
         + (f", {len(holes)} hole(s)" if holes else ""),
         f"metal extent {made_w:.2f} x {made_h:.2f} {u}; next: design --job {job} (mode direct and this size are the defaults)",
+        *([info["note"]] if "note" in info else []),
         *(["WARNING " + info["warning"]] if "warning" in info else []),
         f"preview: {out(job, 'clean_preview.png')}  (gray = metal)",
     ], {"stage": "make", **info, "preview": out(job, "clean_preview.png")})
@@ -1630,6 +1647,7 @@ def main(argv=None):
     mk.add_argument("--text-at", dest="text_at", type=lambda v: [float(x) for x in v.split(",")], default=[0.0, 0.0], help="x,y offset of the text centre from the shape centre")
     mk.add_argument("--line-gap", dest="line_gap", type=float, default=0.25, help="gap between text lines in units")
     mk.add_argument("--hole", action="append", metavar="DIA,X,Y", help="round hole: diameter and centre offset from the shape centre")
+    mk.add_argument("--no-fit", dest="fit", action="store_false", help="do not shrink text to fit inside the shape")
     mk.add_argument("--bar", type=float, default=0.0, help="raised text only: thickness of a bar under the letters that joins them into one part")
     mk.set_defaults(fn=cmd_make)
 

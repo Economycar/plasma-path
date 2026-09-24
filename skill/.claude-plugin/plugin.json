@@ -1,7 +1,7 @@
 {
   "name": "plasma-path",
   "description": "Picture or description to a ready-to-run Mach3 .nc program for a Langmuir CrossFire plasma table",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "author": {
     "name": "Economycar"
   },

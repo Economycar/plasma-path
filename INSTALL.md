@@ -37,8 +37,9 @@ a custom skill?".
 
 ## Using it
 
-Start a new chat (in the project if you made one), attach a picture, and
-say what you want, for example:
+[GUIDE.md](GUIDE.md) walks through the capabilities with pictures. In
+short: start a new chat (in the project if you made one), attach a picture,
+and say what you want, for example:
 
 - "Cut this out of 14 gauge steel, about 12 inches tall."
 - "Make a spray-paint stencil of this logo, 300 mm wide."
