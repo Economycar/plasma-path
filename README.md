@@ -48,8 +48,12 @@ Headless checks, no browser needed:
 - Vectorization: done and verified, within 1 px of the source.
 - Cut design: three modes work, auto-bridging keeps every mode to one piece.
 - G-code: Mach3 dialect, XY only, torch on M3 / off M5, holes first.
-- Not yet done: cut on real metal, per-path overrides, width-locked sizing,
-  bed outline in the preview. Details in `docs/04-backlog.md`.
+  A part was cut on the table on 2026-09-21 and matched the preview.
+- Claude skill: released (see the Releases page); `INSTALL.md` and
+  `GUIDE.md` are for the person using it.
+- Web app only, not yet done: per-path overrides, width-locked sizing, bed
+  outline in the preview. Details in `docs/04-backlog.md`; current state
+  in `docs/08-status.md`.
 
 ## Machine facts that shape the output
 
