@@ -107,3 +107,22 @@ programs) were removed from the history first and replaced by
 strokes, enclosed eye, inner lines, a frame, a watermark). Sample programs
 were regenerated from it with the skill pipeline. Releases carry the
 `.skill` files.
+
+## 2026-09-24
+
+**Guide.** Wrote `GUIDE.md`, a capability tour with seven real previews
+generated from `images/fish.png` and from `make`. Making it showed that
+`make` let text run off the edge of a shape; 1.2.4 shrinks text to fit and
+reports the height used.
+
+**Image generation, checked again.** The user questioned a July date in
+my sources; searched August and September 2026 specifically: still no
+Anthropic image model. Noted the chat/Cowork merge (2026-09-16, rolling
+out) in `INSTALL.md` in case menu names move.
+
+## 2026-09-25
+
+**Closeout.** Added `07-decisions.md` (dated decision index) and
+`08-status.md` (handoff), reconciled `06-skill.md` and `skill/README.md`
+with what shipped (five evals, pip only as an optional fallback), and ran
+the regression gate. Next step is in `08-status.md`.

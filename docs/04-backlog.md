@@ -70,10 +70,17 @@ list.
 - Git init and a first commit. *Done 2026-09-23*; skill releases are tagged
   `skill-v<version>` and built by `skill/release.sh`.
 
-## Skill (added 2026-09-23)
+## Skill (added 2026-09-23, updated 2026-09-25)
 
-- Give the friend the `.skill` file and the Project text; watch the first
-  real conversation and note where the questions confuse him.
+- Send the friend `INSTALL.md`; watch the first real conversation and
+  note where the questions confuse him.
+- After the claude.ai chat/Cowork merge lands, re-check the menu names in
+  `INSTALL.md` and whether re-uploading a skill replaces or duplicates.
+- Re-run the evals on the current version before the next geometry
+  change (last run on 1.2.0/1.2.1); tighten the assertions the graders
+  flagged (pierce counts, stencil plate vs artwork width).
+- Numbered marks on the cleanup preview stop at 60; a photo with hundreds
+  of specks falls back to size filters only.
 - Fill the cut chart (`skill/plasma-path/references/cut-chart.md`) with
   verified rows as materials are tested; only one row is verified today.
 - Eval loop: review `skill/plasma-path-workspace/iteration-1/` results,

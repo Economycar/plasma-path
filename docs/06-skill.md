@@ -41,7 +41,9 @@ cannot unless an admin allows it; 1 CPU, 5 GiB RAM, 30 MB file limit.
 - `references/`: cut chart (one verified row, the rest marked as starting
   points), cleanup recipes by symptom, Mach3 hand-over checklist, and text
   for a Claude Project.
-- `evals/`: three test prompts and their images.
+- `evals/`: five test prompts and their images (coloring page, logo
+  stencil in mm, noisy scan, circle sign from a description, flower photo
+  with a stem to remove).
 
 `skill/dist/plasma-path.skill` is the upload. `skill/README.md` has install
 and update steps.
@@ -75,7 +77,11 @@ and update steps.
 Upload the `.skill` file once (Customize > Skills), optionally make a
 Project with the suggested instructions, then drop a picture in and answer
 two or three questions. Files come back in the conversation's outputs.
-Updates are a re-upload of the zip.
+Updates are a re-upload from the stable link
+https://github.com/Economycar/plasma-path/releases/latest/download/plasma-path.skill.
+Step-by-step text for the person is `INSTALL.md`; a capability tour is
+`GUIDE.md`. Decisions since are indexed in `07-decisions.md`, state in
+`08-status.md`.
 
 ## Robustness reasoning
 
@@ -83,7 +89,8 @@ What could break and what was done about it:
 
 - Sandbox package changes: nothing outside numpy/scipy/Pillow is used;
   the tracer is vendored.
-- Plan without network: no pip at run time.
+- Plan without network: the pipeline never needs pip; the skill allows a
+  pip attempt only as an optional fallback for Claude's own image work.
 - Skill format changes: Anthropic's own skills use the same layout, so a
   migration would be documented.
 - Per-turn tool-use limits: each stage is one script call that writes a

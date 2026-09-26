@@ -123,7 +123,8 @@ it should stay within a few hundredths of an inch apart from lead-ins.
 
 ## Evals
 
-`plasma-path/evals/evals.json` holds the test prompts and their assertions;
-images are in `plasma-path/evals/files/`. Runs and grading live in
-`plasma-path-workspace/` (see `iteration-1/review.html` for the first
-round: with the skill 30/30 assertions across four prompts).
+`plasma-path/evals/evals.json` holds five test prompts and their
+assertions; images are in `plasma-path/evals/files/`. Runs and grading
+live in `plasma-path-workspace/` (git-ignored; `iteration-1/review.html`
+is the first round: with the skill 30/30 assertions across the first four
+prompts, and the fifth passed after the 1.2.0 rewrite).
